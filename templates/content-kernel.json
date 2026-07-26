@@ -1,0 +1,12 @@
+{
+  "schema": "contentos-lite-content-kernel-v1",
+  "reader_problem": "",
+  "main_judgment": "",
+  "reasoning_spine": [],
+  "evidence_jobs": [],
+  "case_jobs": [],
+  "model_jobs": [],
+  "conclusion_boundary": [],
+  "user_locks": [],
+  "source_pointers": []
+}

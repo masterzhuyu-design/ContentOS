@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "contentos-lite/checkpoint.schema.json",
+  "title": "ContentOS Lite Checkpoint",
+  "type": "object",
+  "required": ["schema", "status", "task_kind", "current_stage", "last_verified_step", "evidence_pointers", "pending", "next_required_reads"],
+  "properties": {
+    "schema": {"const": "contentos-lite-checkpoint-v1"},
+    "status": {"enum": ["active", "resumable", "completed", "superseded"]},
+    "task_kind": {"type": "string", "minLength": 1},
+    "current_stage": {"type": "string", "minLength": 1},
+    "last_verified_step": {"type": "string", "minLength": 1},
+    "evidence_pointers": {"type": "array", "items": {"type": "string"}},
+    "pending": {"type": "array", "items": {"type": "string"}},
+    "authorities": {"type": "array", "items": {"type": "string"}},
+    "protected_boundaries": {"type": "array", "items": {"type": "string"}},
+    "next_required_reads": {"type": "array", "items": {"type": "string"}},
+    "updated_at": {"type": "string"}
+  },
+  "additionalProperties": true
+}

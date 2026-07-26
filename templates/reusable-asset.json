@@ -1,0 +1,19 @@
+{
+  "schema": "contentos-lite-reusable-asset-v1",
+  "asset_id": "ASSET-ID",
+  "asset_type": "model",
+  "title": "",
+  "summary": "",
+  "inputs": [],
+  "mechanism": [],
+  "outputs": [],
+  "boundaries": [],
+  "misuse_risks": [],
+  "tags": [],
+  "relations": [],
+  "source_pointers": [],
+  "rights_state": "review_required",
+  "maturity": "candidate",
+  "body_pointer": "",
+  "last_verified_at": null
+}

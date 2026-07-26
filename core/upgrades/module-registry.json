@@ -1,0 +1,22 @@
+{
+  "schema": "contentos-lite-module-registry-v1",
+  "profile_id": "contentos-lite-v0.1",
+  "modules": [
+    {"module_id": "learning_loop", "state": "core", "default_included": true, "upgrade_trigger": null},
+    {"module_id": "review_planner", "state": "core", "default_included": true, "upgrade_trigger": null},
+    {"module_id": "model_case_capture", "state": "core", "default_included": true, "upgrade_trigger": null},
+    {"module_id": "file_ontology", "state": "core", "default_included": true, "upgrade_trigger": null},
+    {"module_id": "asset_reuse", "state": "core", "default_included": true, "upgrade_trigger": null},
+    {"module_id": "share_card_body", "state": "core", "default_included": true, "upgrade_trigger": null},
+    {"module_id": "search_lite", "state": "core", "default_included": true, "upgrade_trigger": null},
+    {"module_id": "creation_lite", "state": "core", "default_included": true, "upgrade_trigger": null},
+    {"module_id": "visual_share_adapter", "state": "optional", "default_included": false, "upgrade_trigger": "Repeated explicit demand for image-note delivery with rights and quality validation"},
+    {"module_id": "platform_analytics_adapter", "state": "optional", "default_included": false, "upgrade_trigger": "A real publishing account and stable evidence schema exist"},
+    {"module_id": "multi_folder_workbench", "state": "optional", "default_included": false, "upgrade_trigger": "Two or more related project roots require controlled joint work"},
+    {"module_id": "semantic_index_adapter", "state": "optional", "default_included": false, "upgrade_trigger": "File indexes no longer meet measured retrieval needs"},
+    {"module_id": "knowledgeos_adapter", "state": "optional", "default_included": false, "upgrade_trigger": "A separately installed read-only KnowledgeOS has a stable narrow interface"},
+    {"module_id": "automation_scheduler", "state": "gated", "default_included": false, "upgrade_trigger": "User grants task-specific scheduling and write authority"},
+    {"module_id": "publishing_adapter", "state": "gated", "default_included": false, "upgrade_trigger": "User grants platform, account, artifact, and publication authority"},
+    {"module_id": "graphrag_ontology_graph", "state": "deferred", "default_included": false, "upgrade_trigger": "File ontology has a measured relation-navigation bottleneck and migration plan"}
+  ]
+}

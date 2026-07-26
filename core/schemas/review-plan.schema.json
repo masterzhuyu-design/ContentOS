@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "contentos-lite/review-plan.schema.json",
+  "title": "Adaptive Review Plan",
+  "type": "object",
+  "required": ["schema", "plan_id", "learning_session_pointer", "adaptive", "review_items"],
+  "properties": {
+    "schema": {"const": "contentos-lite-review-plan-v1"},
+    "plan_id": {"type": "string", "minLength": 1},
+    "learning_session_pointer": {"type": "string", "minLength": 1},
+    "adaptive": {"const": true},
+    "starting_intervals_days": {"type": "array", "items": {"type": "integer", "minimum": 0}},
+    "review_items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["review_type", "planned_at", "trigger_basis", "status"],
+        "properties": {
+          "review_type": {"enum": ["free_recall", "mechanism_explanation", "boundary_discrimination", "transfer_case", "evidence_update", "mixed"]},
+          "planned_at": {"type": "string"},
+          "trigger_basis": {"type": "array", "items": {"type": "string"}},
+          "status": {"enum": ["planned", "completed", "rescheduled", "cancelled"]},
+          "result_pointer": {"type": ["string", "null"]},
+          "next_interval_days": {"type": ["integer", "null"], "minimum": 0}
+        },
+        "additionalProperties": false
+      }
+    },
+    "updated_at": {"type": "string"}
+  },
+  "additionalProperties": false
+}

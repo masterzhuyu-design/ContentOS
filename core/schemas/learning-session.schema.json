@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "contentos-lite/learning-session.schema.json",
+  "title": "Learning Session",
+  "type": "object",
+  "required": ["schema", "session_id", "source_pointer", "learning_goal", "stage", "completed_steps", "next_action"],
+  "properties": {
+    "schema": {"const": "contentos-lite-learning-session-v1"},
+    "session_id": {"type": "string", "minLength": 1},
+    "source_pointer": {"type": "string", "minLength": 1},
+    "rights_state": {"type": "string"},
+    "learning_goal": {"type": "string", "minLength": 1},
+    "scope": {"type": "string"},
+    "stage": {"enum": ["intake_ready", "teaching", "decomposition_qa", "transfer_qa", "closing", "reviewing", "completed"]},
+    "completed_steps": {"type": "array", "items": {"type": "string"}},
+    "error_signals": {"type": "array", "items": {"type": "string"}},
+    "asset_candidate_pointers": {"type": "array", "items": {"type": "string"}},
+    "review_plan_pointer": {"type": ["string", "null"]},
+    "next_action": {"type": "string", "minLength": 1}
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,14 @@
+{
+  "schema": "contentos-lite-ontology-statement-v1",
+  "statement_id": "STATEMENT-ID",
+  "subject": "",
+  "predicate": "custom",
+  "custom_predicate": null,
+  "object": "",
+  "qualifiers": {},
+  "source_pointer": "",
+  "confidence_state": "unknown",
+  "counterevidence": [],
+  "status": "active",
+  "updated_at": ""
+}

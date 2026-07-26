@@ -1,0 +1,9 @@
+{
+  "schema": "contentos-lite-review-plan-v1",
+  "plan_id": "REVIEW-PLAN-ID",
+  "learning_session_pointer": "",
+  "adaptive": true,
+  "starting_intervals_days": [1, 7, 30],
+  "review_items": [],
+  "updated_at": ""
+}

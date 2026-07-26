@@ -1,0 +1,111 @@
+{
+  "schema": "contentos-lite-task-profiles-v1",
+  "profile_id": "contentos-lite-v0.1",
+  "profiles": [
+    {
+      "task_kind": "thread_recovery_lite",
+      "objective": "从本地 checkpoint 的最小指针恢复，不读取完整旧会话",
+      "rule_files": ["core/rules/00-boundaries.md", "core/rules/02-startup-recovery-and-write-gates.md"],
+      "required_inputs": ["checkpoint_pointer"],
+      "budget": {"soft_target_utf8_bytes": 5000, "advisory_ceiling_utf8_bytes": 8000, "hard_safety_ceiling_utf8_bytes": 16000}
+    },
+    {
+      "task_kind": "vault_query_lite",
+      "objective": "按对象与指针查询本地 Markdown/JSON，不预载全库",
+      "rule_files": ["core/rules/00-boundaries.md", "core/rules/01-object-model-and-three-tracks.md", "core/rules/04-assets-ontology-and-reuse.md"],
+      "required_inputs": ["user_query"],
+      "budget": {"soft_target_utf8_bytes": 9000, "advisory_ceiling_utf8_bytes": 14000, "hard_safety_ceiling_utf8_bytes": 24000}
+    },
+    {
+      "task_kind": "learning_intake_lite",
+      "objective": "把新材料建立为来源绑定的 LearningSession",
+      "rule_files": ["core/rules/00-boundaries.md", "core/rules/01-object-model-and-three-tracks.md", "core/rules/03-learning-review-and-share.md"],
+      "required_inputs": ["learning_material", "learning_goal"],
+      "budget": {"soft_target_utf8_bytes": 11000, "advisory_ceiling_utf8_bytes": 17000, "hard_safety_ceiling_utf8_bytes": 28000}
+    },
+    {
+      "task_kind": "learning_teaching_lite",
+      "objective": "在问题测试前直接解释材料的对象、机制、关系和边界",
+      "rule_files": ["core/rules/00-boundaries.md", "core/rules/03-learning-review-and-share.md", "core/rules/04-assets-ontology-and-reuse.md"],
+      "required_inputs": ["learning_session", "source_pointer"],
+      "budget": {"soft_target_utf8_bytes": 10000, "advisory_ceiling_utf8_bytes": 14000, "hard_safety_ceiling_utf8_bytes": 24000}
+    },
+    {
+      "task_kind": "decomposition_qa_lite",
+      "objective": "用拆解问答检验对知识对象、机制、关系和边界的理解",
+      "rule_files": ["core/rules/00-boundaries.md", "core/rules/03-learning-review-and-share.md", "core/rules/04-assets-ontology-and-reuse.md"],
+      "required_inputs": ["teaching_digest", "source_pointer"],
+      "budget": {"soft_target_utf8_bytes": 10000, "advisory_ceiling_utf8_bytes": 14000, "hard_safety_ceiling_utf8_bytes": 24000}
+    },
+    {
+      "task_kind": "transfer_qa_lite",
+      "objective": "用新情境检验迁移、更新判断和行动选择",
+      "rule_files": ["core/rules/00-boundaries.md", "core/rules/03-learning-review-and-share.md", "core/rules/04-assets-ontology-and-reuse.md"],
+      "required_inputs": ["decomposition_qa_receipt", "transfer_target"],
+      "budget": {"soft_target_utf8_bytes": 10000, "advisory_ceiling_utf8_bytes": 14000, "hard_safety_ceiling_utf8_bytes": 24000}
+    },
+    {
+      "task_kind": "learning_close_lite",
+      "objective": "收束学习结果、资产候选和复习计划，不自动进入创作",
+      "rule_files": ["core/rules/00-boundaries.md", "core/rules/01-object-model-and-three-tracks.md", "core/rules/03-learning-review-and-share.md", "core/rules/04-assets-ontology-and-reuse.md"],
+      "required_inputs": ["learning_session", "decomposition_qa_receipt", "transfer_qa_receipt"],
+      "budget": {"soft_target_utf8_bytes": 15000, "advisory_ceiling_utf8_bytes": 22000, "hard_safety_ceiling_utf8_bytes": 36000}
+    },
+    {
+      "task_kind": "review_schedule_lite",
+      "objective": "根据掌握度、错误类型和重要性生成或调整复习计划",
+      "rule_files": ["core/rules/00-boundaries.md", "core/rules/03-learning-review-and-share.md", "core/rules/04-assets-ontology-and-reuse.md"],
+      "required_inputs": ["learning_result", "review_evidence"],
+      "budget": {"soft_target_utf8_bytes": 11000, "advisory_ceiling_utf8_bytes": 17000, "hard_safety_ceiling_utf8_bytes": 28000}
+    },
+    {
+      "task_kind": "share_card_lite",
+      "objective": "从已完成学习生成可独立阅读的普通分享卡正文",
+      "rule_files": ["core/rules/00-boundaries.md", "core/rules/03-learning-review-and-share.md", "core/rules/07-review-and-quality.md"],
+      "required_inputs": ["learning_result", "share_scope"],
+      "budget": {"soft_target_utf8_bytes": 12000, "advisory_ceiling_utf8_bytes": 18000, "hard_safety_ceiling_utf8_bytes": 30000}
+    },
+    {
+      "task_kind": "model_case_capture_lite",
+      "objective": "把模型或案例收录成来源、机制、边界明确的 ReusableAsset",
+      "rule_files": ["core/rules/00-boundaries.md", "core/rules/01-object-model-and-three-tracks.md", "core/rules/04-assets-ontology-and-reuse.md"],
+      "required_inputs": ["candidate_type", "candidate_body", "source_pointer"],
+      "budget": {"soft_target_utf8_bytes": 10000, "advisory_ceiling_utf8_bytes": 16000, "hard_safety_ceiling_utf8_bytes": 26000}
+    },
+    {
+      "task_kind": "ontology_update_lite",
+      "objective": "以来源绑定的 subject-predicate-object 关系更新文件型本体",
+      "rule_files": ["core/rules/00-boundaries.md", "core/rules/01-object-model-and-three-tracks.md", "core/rules/04-assets-ontology-and-reuse.md"],
+      "required_inputs": ["ontology_statement", "source_pointer"],
+      "budget": {"soft_target_utf8_bytes": 10000, "advisory_ceiling_utf8_bytes": 16000, "hard_safety_ceiling_utf8_bytes": 26000}
+    },
+    {
+      "task_kind": "asset_reuse_lite",
+      "objective": "先用摘要召回模型、案例、概念和结构候选，选中后才读取正文",
+      "rule_files": ["core/rules/00-boundaries.md", "core/rules/04-assets-ontology-and-reuse.md"],
+      "required_inputs": ["reuse_goal", "task_context"],
+      "budget": {"soft_target_utf8_bytes": 8000, "advisory_ceiling_utf8_bytes": 13000, "hard_safety_ceiling_utf8_bytes": 22000}
+    },
+    {
+      "task_kind": "web_search_lite",
+      "objective": "按风险、时效和证据缺口柔性搜索并返回紧凑 EvidencePacket",
+      "rule_files": ["core/rules/00-boundaries.md", "core/rules/02-startup-recovery-and-write-gates.md", "core/rules/05-search-lite.md"],
+      "required_inputs": ["question", "freshness", "risk_class", "scope"],
+      "budget": {"soft_target_utf8_bytes": 12000, "advisory_ceiling_utf8_bytes": 18000, "hard_safety_ceiling_utf8_bytes": 32000}
+    },
+    {
+      "task_kind": "content_creation_lite",
+      "objective": "从 ContentKernel、已选证据和用户锁定项生成一份当前载体正文",
+      "rule_files": ["core/rules/00-boundaries.md", "core/rules/01-object-model-and-three-tracks.md", "core/rules/04-assets-ontology-and-reuse.md", "core/rules/06-creation-lite.md", "core/rules/07-review-and-quality.md"],
+      "required_inputs": ["content_kernel", "target_medium", "selected_evidence", "user_locks"],
+      "budget": {"soft_target_utf8_bytes": 16000, "advisory_ceiling_utf8_bytes": 24000, "hard_safety_ceiling_utf8_bytes": 40000}
+    },
+    {
+      "task_kind": "content_review_lite",
+      "objective": "按可观察失败信号审阅，只在用户要求修改时生成差量或新版",
+      "rule_files": ["core/rules/00-boundaries.md", "core/rules/07-review-and-quality.md"],
+      "required_inputs": ["current_artifact", "review_scope", "content_kernel_or_source"],
+      "budget": {"soft_target_utf8_bytes": 10000, "advisory_ceiling_utf8_bytes": 16000, "hard_safety_ceiling_utf8_bytes": 28000}
+    }
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  "schema": "contentos-lite-config-v1",
+  "profile_id": "contentos-lite-v0.1",
+  "language": "zh-CN",
+  "paths": {
+    "vault_root": "vault",
+    "checkpoint_root": ".contentos/runtime/checkpoints",
+    "receipt_root": ".contentos/runtime/receipts",
+    "user_overrides": ".contentos/local-overrides.json"
+  },
+  "features": {
+    "learning_loop": true,
+    "review_planning": true,
+    "share_card_body": true,
+    "model_case_capture": true,
+    "file_ontology": true,
+    "asset_reuse": true,
+    "web_search_lite": true,
+    "content_creation_lite": true,
+    "local_llm": false,
+    "knowledgeos": false,
+    "semantic_index": false,
+    "automatic_publish": false,
+    "automatic_scheduler": false
+  },
+  "context_policy": {
+    "measurement": "hydrated_utf8_bytes",
+    "semantic_truncation_forbidden": true,
+    "raw_tool_payload_in_main_context": false,
+    "expansion_requires_reason": true
+  },
+  "review_policy": {
+    "starting_intervals_days": [1, 7, 30],
+    "adaptive": true,
+    "reschedule_signals": [
+      "retrieval_failure",
+      "boundary_confusion",
+      "transfer_failure",
+      "high_importance",
+      "stable_mastery"
+    ]
+  }
+}

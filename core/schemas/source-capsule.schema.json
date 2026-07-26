@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "contentos-lite/source-capsule.schema.json",
+  "title": "Source Capsule",
+  "type": "object",
+  "required": ["schema", "source_id", "title", "pointer", "supports", "limitations"],
+  "properties": {
+    "schema": {"const": "contentos-lite-source-capsule-v1"},
+    "source_id": {"type": "string", "minLength": 1},
+    "title": {"type": "string", "minLength": 1},
+    "creator_or_publisher": {"type": "string"},
+    "published_at": {"type": ["string", "null"]},
+    "event_at": {"type": ["string", "null"]},
+    "pointer": {"type": "string", "minLength": 1},
+    "source_type": {"type": "string"},
+    "independence_group": {"type": "string"},
+    "supports": {"type": "array", "items": {"type": "string"}},
+    "contradicts": {"type": "array", "items": {"type": "string"}},
+    "limitations": {"type": "array", "items": {"type": "string"}},
+    "rights_state": {"type": "string"}
+  },
+  "additionalProperties": false
+}
