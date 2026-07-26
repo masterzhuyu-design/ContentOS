@@ -10,7 +10,15 @@ $failures = [Collections.Generic.List[string]]::new()
 
 $files = @(
     Get-ChildItem -LiteralPath $rootFull -Recurse -File -Force |
-        Where-Object { $_.FullName -notmatch '[\\/]\.git[\\/]' }
+        Where-Object {
+            $candidateRelative = $_.FullName.Substring($rootFull.Length).
+                TrimStart('\', '/').Replace('\', '/')
+            $candidateRelative -ne '.git' -and
+                -not $candidateRelative.StartsWith(
+                    '.git/',
+                    [StringComparison]::OrdinalIgnoreCase
+                )
+        }
 )
 
 $denySegments = @(

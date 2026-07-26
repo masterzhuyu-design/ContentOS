@@ -76,6 +76,7 @@ Ensure-Directory -Path $destinationFull
 foreach ($name in @(
     'README.md',
     'AGENTS.md',
+    '.gitattributes',
     '.gitignore',
     'LICENSE-CODE',
     'LICENSE-DOCS.md',

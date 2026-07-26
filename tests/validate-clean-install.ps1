@@ -63,14 +63,17 @@ try {
 
     foreach ($validatorName in @(
         'validate-core-contract.ps1',
+        'validate-problem-regression-scenarios.ps1',
         'validate-task-budgets.ps1',
         'validate-no-private-state.ps1'
     )) {
+        $global:LASTEXITCODE = 0
         $validatorOutput = @(
             & (Join-Path $fixture "tests\$validatorName") -Root $fixture
         )
         $validatorSucceeded = $?
-        if (-not $validatorSucceeded) {
+        $validatorExitCode = $LASTEXITCODE
+        if (-not $validatorSucceeded -or $validatorExitCode -ne 0) {
             $failures.Add("installed_validator_failed:$validatorName")
             $validatorOutput | ForEach-Object {
                 $failures.Add(

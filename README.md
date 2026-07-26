@@ -1,6 +1,6 @@
 # 个人知识系统 Lite / ContentOS Lite
 
-ContentOS Lite 是一套可复制给其他人使用的文件型个人知识系统。它保留完整学习、知识沉淀、复习、复用、搜索和创作能力，同时把运行依赖与上下文负担压到较低水平。
+ContentOS Lite v0.1.1 是一套可复制给其他人使用的文件型个人知识系统。它保留完整学习、知识沉淀、复习、复用、搜索和创作能力，同时把运行依赖与上下文负担压到较低水平。
 
 ## 默认包含
 
@@ -11,6 +11,7 @@ ContentOS Lite 是一套可复制给其他人使用的文件型个人知识系�
 - 收录资产的后续按需复用；
 - 柔性网页搜索；
 - 柔性内容创作与定向审阅；
+- 历史问题驱动的只读 QualityGate 与行为级回归；
 - 相对路径、最小 startup、checkpoint、权限与写入保护。
 
 ## 默认不包含
@@ -34,13 +35,16 @@ ContentOS Lite 是一套可复制给其他人使用的文件型个人知识系�
 
 ```powershell
 .\tests\validate-core-contract.ps1
+.\tests\validate-problem-regression-scenarios.ps1
 .\tests\validate-task-budgets.ps1
 .\tests\validate-no-private-state.ps1
+.\tests\validate-release-manifest.ps1
 ```
 
 查看功能与日常操作：
 
 - [功能与操作流程](docs/功能与操作流程.md)
+- [对外聊天简要说明](docs/对外聊天简要说明.md)
 - [可升级模块地图](docs/可升级模块地图.md)
 - [安装说明](docs/install.md)
 - [更新与用户覆盖层](docs/update-and-user-overrides.md)

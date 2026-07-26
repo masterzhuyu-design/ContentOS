@@ -11,8 +11,14 @@ $manifestPath = Join-Path $rootFull 'MANIFEST.json'
 $rows = @(
     Get-ChildItem -LiteralPath $rootFull -Recurse -File -Force |
         Where-Object {
+            $candidateRelative = $_.FullName.Substring($rootFull.Length).
+                TrimStart('\', '/').Replace('\', '/')
             $_.FullName -ne $manifestPath -and
-            $_.FullName -notmatch '[\\/]\.git[\\/]'
+                $candidateRelative -ne '.git' -and
+                -not $candidateRelative.StartsWith(
+                    '.git/',
+                    [StringComparison]::OrdinalIgnoreCase
+                )
         } |
         ForEach-Object {
             $relative = $_.FullName.Substring($rootFull.Length).
@@ -44,7 +50,7 @@ $rows = @(
 
 $manifest = [ordered]@{
     schema = 'contentos-lite-package-manifest-v1'
-    profile_id = 'contentos-lite-v0.1'
+    profile_id = 'contentos-lite-v0.1.1'
     generated_at = (Get-Date).ToString('o')
     manifest_self_excluded = $true
     file_count = $rows.Count

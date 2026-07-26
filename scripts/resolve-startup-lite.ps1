@@ -147,6 +147,30 @@ else {
     'ready'
 }
 
+$qualityGateProjection = $null
+$profileQualityGates = @($profile.quality_gates)
+if ($profileQualityGates.Count -gt 0) {
+    if ($null -eq $manifest.quality_gate_interface) {
+        throw 'Quality gate interface missing from task profile manifest'
+    }
+    $qualityGateTool = Get-ContainedPath `
+        -Base $rootFull `
+        -Candidate ([string]$manifest.quality_gate_interface.tool)
+    if (-not (Test-Path -LiteralPath $qualityGateTool -PathType Leaf)) {
+        throw "Quality gate tool missing: $qualityGateTool"
+    }
+    $qualityGateProjection = [ordered]@{
+        tool = [string]$manifest.quality_gate_interface.tool
+        input_schema =
+            [string]$manifest.quality_gate_interface.input_schema
+        output_schema =
+            [string]$manifest.quality_gate_interface.output_schema
+        gates = $profileQualityGates
+        side_effects =
+            [string]$manifest.quality_gate_interface.side_effects
+    }
+}
+
 $generatorView = $null
 if ($status -eq 'ready') {
     $generatorView = [ordered]@{
@@ -161,6 +185,7 @@ if ($status -eq 'ready') {
             $null
         }
         hydrated_rules = $ruleRows
+        quality_gate_interface = $qualityGateProjection
     }
 }
 

@@ -1,6 +1,12 @@
 {
   "schema": "contentos-lite-task-profiles-v1",
-  "profile_id": "contentos-lite-v0.1",
+  "profile_id": "contentos-lite-v0.1.1",
+  "quality_gate_interface": {
+    "tool": "scripts/evaluate-quality-gate-lite.ps1",
+    "input_schema": "contentos-lite-quality-observation-v1",
+    "output_schema": "contentos-lite-quality-decision-v1",
+    "side_effects": "none"
+  },
   "profiles": [
     {
       "task_kind": "thread_recovery_lite",
@@ -28,6 +34,7 @@
       "objective": "在问题测试前直接解释材料的对象、机制、关系和边界",
       "rule_files": ["core/rules/00-boundaries.md", "core/rules/03-learning-review-and-share.md", "core/rules/04-assets-ontology-and-reuse.md"],
       "required_inputs": ["learning_session", "source_pointer"],
+      "quality_gates": ["asset_reuse"],
       "budget": {"soft_target_utf8_bytes": 10000, "advisory_ceiling_utf8_bytes": 14000, "hard_safety_ceiling_utf8_bytes": 24000}
     },
     {
@@ -35,6 +42,7 @@
       "objective": "用拆解问答检验对知识对象、机制、关系和边界的理解",
       "rule_files": ["core/rules/00-boundaries.md", "core/rules/03-learning-review-and-share.md", "core/rules/04-assets-ontology-and-reuse.md"],
       "required_inputs": ["teaching_digest", "source_pointer"],
+      "quality_gates": ["teaching_before_test", "asset_reuse"],
       "budget": {"soft_target_utf8_bytes": 10000, "advisory_ceiling_utf8_bytes": 14000, "hard_safety_ceiling_utf8_bytes": 24000}
     },
     {
@@ -42,6 +50,7 @@
       "objective": "用新情境检验迁移、更新判断和行动选择",
       "rule_files": ["core/rules/00-boundaries.md", "core/rules/03-learning-review-and-share.md", "core/rules/04-assets-ontology-and-reuse.md"],
       "required_inputs": ["decomposition_qa_receipt", "transfer_target"],
+      "quality_gates": ["teaching_before_test", "transfer_integrity", "asset_reuse"],
       "budget": {"soft_target_utf8_bytes": 10000, "advisory_ceiling_utf8_bytes": 14000, "hard_safety_ceiling_utf8_bytes": 24000}
     },
     {
@@ -49,6 +58,7 @@
       "objective": "收束学习结果、资产候选和复习计划，不自动进入创作",
       "rule_files": ["core/rules/00-boundaries.md", "core/rules/01-object-model-and-three-tracks.md", "core/rules/03-learning-review-and-share.md", "core/rules/04-assets-ontology-and-reuse.md"],
       "required_inputs": ["learning_session", "decomposition_qa_receipt", "transfer_qa_receipt"],
+      "quality_gates": ["track_authority"],
       "budget": {"soft_target_utf8_bytes": 15000, "advisory_ceiling_utf8_bytes": 22000, "hard_safety_ceiling_utf8_bytes": 36000}
     },
     {
@@ -56,6 +66,7 @@
       "objective": "根据掌握度、错误类型和重要性生成或调整复习计划",
       "rule_files": ["core/rules/00-boundaries.md", "core/rules/03-learning-review-and-share.md", "core/rules/04-assets-ontology-and-reuse.md"],
       "required_inputs": ["learning_result", "review_evidence"],
+      "quality_gates": ["review_adaptation", "asset_reuse"],
       "budget": {"soft_target_utf8_bytes": 11000, "advisory_ceiling_utf8_bytes": 17000, "hard_safety_ceiling_utf8_bytes": 28000}
     },
     {
@@ -63,6 +74,7 @@
       "objective": "从已完成学习生成可独立阅读的普通分享卡正文",
       "rule_files": ["core/rules/00-boundaries.md", "core/rules/03-learning-review-and-share.md", "core/rules/07-review-and-quality.md"],
       "required_inputs": ["learning_result", "share_scope"],
+      "quality_gates": ["share_completeness", "capacity_preservation", "discussion_delta_integrity", "rights_scope", "authorship_quality", "track_authority"],
       "budget": {"soft_target_utf8_bytes": 12000, "advisory_ceiling_utf8_bytes": 18000, "hard_safety_ceiling_utf8_bytes": 30000}
     },
     {
@@ -70,6 +82,7 @@
       "objective": "把模型或案例收录成来源、机制、边界明确的 ReusableAsset",
       "rule_files": ["core/rules/00-boundaries.md", "core/rules/01-object-model-and-three-tracks.md", "core/rules/04-assets-ontology-and-reuse.md"],
       "required_inputs": ["candidate_type", "candidate_body", "source_pointer"],
+      "quality_gates": ["rights_scope"],
       "budget": {"soft_target_utf8_bytes": 10000, "advisory_ceiling_utf8_bytes": 16000, "hard_safety_ceiling_utf8_bytes": 26000}
     },
     {
@@ -84,6 +97,7 @@
       "objective": "先用摘要召回模型、案例、概念和结构候选，选中后才读取正文",
       "rule_files": ["core/rules/00-boundaries.md", "core/rules/04-assets-ontology-and-reuse.md"],
       "required_inputs": ["reuse_goal", "task_context"],
+      "quality_gates": ["asset_reuse"],
       "budget": {"soft_target_utf8_bytes": 8000, "advisory_ceiling_utf8_bytes": 13000, "hard_safety_ceiling_utf8_bytes": 22000}
     },
     {
@@ -91,6 +105,7 @@
       "objective": "按风险、时效和证据缺口柔性搜索并返回紧凑 EvidencePacket",
       "rule_files": ["core/rules/00-boundaries.md", "core/rules/02-startup-recovery-and-write-gates.md", "core/rules/05-search-lite.md"],
       "required_inputs": ["question", "freshness", "risk_class", "scope"],
+      "quality_gates": ["search_claim_calibration"],
       "budget": {"soft_target_utf8_bytes": 12000, "advisory_ceiling_utf8_bytes": 18000, "hard_safety_ceiling_utf8_bytes": 32000}
     },
     {
@@ -98,6 +113,7 @@
       "objective": "从 ContentKernel、已选证据和用户锁定项生成一份当前载体正文",
       "rule_files": ["core/rules/00-boundaries.md", "core/rules/01-object-model-and-three-tracks.md", "core/rules/04-assets-ontology-and-reuse.md", "core/rules/06-creation-lite.md", "core/rules/07-review-and-quality.md"],
       "required_inputs": ["content_kernel", "target_medium", "selected_evidence", "user_locks"],
+      "quality_gates": ["creation_coherence", "asset_reuse", "capacity_preservation", "discussion_delta_integrity", "rights_scope", "authorship_quality", "track_authority"],
       "budget": {"soft_target_utf8_bytes": 16000, "advisory_ceiling_utf8_bytes": 24000, "hard_safety_ceiling_utf8_bytes": 40000}
     },
     {
@@ -105,6 +121,7 @@
       "objective": "按可观察失败信号审阅，只在用户要求修改时生成差量或新版",
       "rule_files": ["core/rules/00-boundaries.md", "core/rules/07-review-and-quality.md"],
       "required_inputs": ["current_artifact", "review_scope", "content_kernel_or_source"],
+      "quality_gates": ["revision_scope", "discussion_delta_integrity", "authorship_quality", "rights_scope", "capacity_preservation"],
       "budget": {"soft_target_utf8_bytes": 10000, "advisory_ceiling_utf8_bytes": 16000, "hard_safety_ceiling_utf8_bytes": 28000}
     }
   ]

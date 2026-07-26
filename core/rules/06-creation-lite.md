@@ -34,6 +34,8 @@ DraftPackage 包含一份主成稿、所用证据/案例/模型指针、未解�
 
 模型和案例通过 AssetReusePlanner 柔性调用。`no_fixed_quota`：不用也成立就不调用；一个完整案例能承担任务时不拆成多个标签；多个案例能揭示关键边界时可以扩展。每个调用必须通过删除测试。
 
+讨论和调整不能覆盖创作真源。进入讨论前冻结 `canonical_source_digest`、`load_bearing_units`、ContentKernel 与用户锁定项；讨论项标记为 `confirmed_adjustment / candidate_option / rejected_option / clarification_only`。新稿只能应用 `confirmed_adjustment`。候选、已拒绝或仅用于澄清的内容不得因为离当前消息更近而污染成稿；没有明确删除授权时，原承重单元不得消失。
+
 ## 候选与审阅成本
 
 - 默认不并行生成多份完整全文。

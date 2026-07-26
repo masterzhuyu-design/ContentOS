@@ -57,3 +57,31 @@ ReviewReceipt 只记录：
 - 修改范围；
 - 证据指针；
 - 是否需要扩展预算。
+
+## 可执行质量门
+
+相关 TaskKind 的 startup 会投射同一个只读 Interface：
+
+`QualityObservation → QualityDecision`
+
+`QualityObservation` 只提交当前成品上可观察的事实，不提交完整材料或工具原始输出。`QualityDecision` 返回：
+
+- `pass`：可以继续；
+- `targeted_repair`：冻结已通过表面，只修命名缺口；
+- `return_upstream`：返回最早责任层，例如教学、ContentKernel 或 Reasoning Spine；
+- `blocked`：缺真源、越权或正在做语义截断，必须先解除阻断。
+
+Module 不生成正文、不写状态、不发布，也不授予整篇重写。只有 ContentKernel 或 Reasoning Spine 失败时，`full_rewrite_allowed` 才能为 true。
+
+### discussion_delta_integrity
+
+分享卡、创作和返工都把讨论视为差量，不把最近聊天当真源。调用前绑定：
+
+- `canonical_source_digest`；
+- `load_bearing_units`；
+- `confirmed_adjustment`；
+- `candidate_option`；
+- `rejected_option`；
+- `clarification_only`。
+
+新稿应用项必须是 confirmed adjustment 的子集。任何 candidate option、rejected option 或 clarification only 进入正文，均记 `unconfirmed_discussion_applied`；没有明确删除授权却丢失 load bearing units，记 `canonical_content_dropped`。修复时重新绑定 canonical source，只应用确认差量并恢复遗漏单元，不能靠整篇重写重新猜原意。

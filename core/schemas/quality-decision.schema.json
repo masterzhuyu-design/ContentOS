@@ -1,0 +1,84 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "contentos-lite/quality-decision.schema.json",
+  "title": "ContentOS Lite QualityDecision",
+  "type": "object",
+  "required": [
+    "schema",
+    "status",
+    "observation_id",
+    "gate",
+    "task_kind",
+    "decision",
+    "earliest_failure_layer",
+    "violations",
+    "frozen_surfaces",
+    "next_actions",
+    "full_rewrite_allowed",
+    "side_effects"
+  ],
+  "properties": {
+    "schema": {
+      "const": "contentos-lite-quality-decision-v1"
+    },
+    "status": {
+      "const": "valid"
+    },
+    "observation_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "gate": {
+      "type": "string",
+      "minLength": 1
+    },
+    "task_kind": {
+      "type": "string",
+      "minLength": 1
+    },
+    "decision": {
+      "enum": [
+        "pass",
+        "targeted_repair",
+        "return_upstream",
+        "blocked"
+      ]
+    },
+    "earliest_failure_layer": {
+      "type": "string",
+      "minLength": 1
+    },
+    "violations": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "uniqueItems": true
+    },
+    "frozen_surfaces": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "uniqueItems": true
+    },
+    "next_actions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "uniqueItems": true
+    },
+    "full_rewrite_allowed": {
+      "type": "boolean"
+    },
+    "side_effects": {
+      "const": "none"
+    },
+    "result": {
+      "type": "object",
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false
+}

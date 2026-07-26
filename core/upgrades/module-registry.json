@@ -1,6 +1,6 @@
 {
   "schema": "contentos-lite-module-registry-v1",
-  "profile_id": "contentos-lite-v0.1",
+  "profile_id": "contentos-lite-v0.1.1",
   "modules": [
     {"module_id": "learning_loop", "state": "core", "default_included": true, "upgrade_trigger": null},
     {"module_id": "review_planner", "state": "core", "default_included": true, "upgrade_trigger": null},
@@ -10,6 +10,8 @@
     {"module_id": "share_card_body", "state": "core", "default_included": true, "upgrade_trigger": null},
     {"module_id": "search_lite", "state": "core", "default_included": true, "upgrade_trigger": null},
     {"module_id": "creation_lite", "state": "core", "default_included": true, "upgrade_trigger": null},
+    {"module_id": "quality_gate", "state": "core", "default_included": true, "upgrade_trigger": null},
+    {"module_id": "problem_regression_suite", "state": "core", "default_included": true, "upgrade_trigger": null},
     {"module_id": "visual_share_adapter", "state": "optional", "default_included": false, "upgrade_trigger": "Repeated explicit demand for image-note delivery with rights and quality validation"},
     {"module_id": "platform_analytics_adapter", "state": "optional", "default_included": false, "upgrade_trigger": "A real publishing account and stable evidence schema exist"},
     {"module_id": "multi_folder_workbench", "state": "optional", "default_included": false, "upgrade_trigger": "Two or more related project roots require controlled joint work"},

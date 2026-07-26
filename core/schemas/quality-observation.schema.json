@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "contentos-lite/quality-observation.schema.json",
+  "title": "ContentOS Lite QualityObservation",
+  "type": "object",
+  "required": [
+    "schema",
+    "observation_id",
+    "gate",
+    "task_kind",
+    "facts"
+  ],
+  "properties": {
+    "schema": {
+      "const": "contentos-lite-quality-observation-v1"
+    },
+    "observation_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "gate": {
+      "enum": [
+        "teaching_before_test",
+        "transfer_integrity",
+        "asset_reuse",
+        "share_completeness",
+        "capacity_preservation",
+        "creation_coherence",
+        "revision_scope",
+        "authorship_quality",
+        "discussion_delta_integrity",
+        "search_claim_calibration",
+        "rights_scope",
+        "review_adaptation",
+        "track_authority"
+      ]
+    },
+    "task_kind": {
+      "type": "string",
+      "minLength": 1
+    },
+    "facts": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,6 +1,6 @@
 {
   "schema": "contentos-lite-config-v1",
-  "profile_id": "contentos-lite-v0.1",
+  "profile_id": "contentos-lite-v0.1.1",
   "language": "zh-CN",
   "paths": {
     "vault_root": "vault",
