@@ -1,21 +1,20 @@
 [CmdletBinding()]
-param([string]$Root = (Split-Path -Parent $PSScriptRoot))
+param([string]$Root)
 
 $ErrorActionPreference = 'Stop'
+if ([string]::IsNullOrWhiteSpace($Root)) {
+    $Root = Split-Path -Parent $PSScriptRoot
+}
 $failures = [Collections.Generic.List[string]]::new()
 $rows = [Collections.Generic.List[object]]::new()
-
-$manifest = Get-Content `
-    -LiteralPath (Join-Path $Root 'core\profiles\task-profiles.json') `
-    -Raw `
-    -Encoding UTF8 |
-    ConvertFrom-Json
-$resolver = Join-Path $Root 'scripts\resolve-startup-lite.ps1'
+$manifest = Get-Content -LiteralPath (
+    Join-Path $Root 'core\profiles\task-profiles.json'
+) -Raw -Encoding UTF8 | ConvertFrom-Json
+$resolver = Join-Path $Root 'scripts\resolve-contentos-startup.ps1'
 
 foreach ($profile in @($manifest.profiles)) {
-    $result = & $resolver `
-        -Root $Root `
-        -TaskKind ([string]$profile.task_kind) |
+    $result = & $resolver -Root $Root -Profile full `
+        -TaskKind ([string]$profile.task_kind) -InputsJson '{}' |
         ConvertFrom-Json
     $bytes = [int]$result.hydration.total_utf8_bytes
     $soft = [int]$profile.budget.soft_target_utf8_bytes
@@ -30,18 +29,13 @@ foreach ($profile in @($manifest.profiles)) {
         state = [string]$result.hydration.budget.state
     })
     if ($bytes -gt $advisory) {
-        $failures.Add(
-            "shipped_bundle_exceeds_advisory:$($profile.task_kind):$bytes"
-        )
+        $failures.Add("shipped_bundle_exceeds_advisory:$($profile.task_kind):$bytes")
     }
-    if ($bytes -gt $hard) {
-        $failures.Add(
-            "shipped_bundle_exceeds_hard:$($profile.task_kind):$bytes"
-        )
+    if ($bytes -gt $hard -or [string]$result.status -eq 'blocked_budget_overflow') {
+        $failures.Add("shipped_bundle_exceeds_hard:$($profile.task_kind):$bytes")
     }
 }
 
-$rows | ConvertTo-Json -Depth 5
 if ($failures.Count -gt 0) {
     $failures | ForEach-Object { "FAIL: $_" }
     "SUMMARY: task budget validation failed ($($failures.Count))"

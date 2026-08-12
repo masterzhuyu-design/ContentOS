@@ -1,32 +1,25 @@
-# 更新与用户覆盖层
+# 更新与用户实例
 
-## 三层
+ContentOS 把公共程序和私人实例分开：
 
-1. `core/`：发行版规则和 schema；
-2. `.contentos/local-overrides.json`：本机功能偏好和预算覆盖；
-3. `vault/`：用户数据。
+1. `core/`、`scripts/`、`templates/` 和 `tests/` 是公共上游；
+2. `.contentos/config.json` 是当前实例的配置，至少决定使用 `full` 还是 `lite`；
+3. `vault/` 和 `.contentos/runtime/` 是用户内容与运行状态，不应被上游更新覆盖。
 
-更新 Core 时不得覆盖后两层。
+`config/contentos.example.json` 中的 `user_overrides` 是保留给实例适配器的用户扩展位置。v0.2.0-rc.1 的 canonical startup 不会擅自解释任意 override 字段，避免一个未定义的本地文件静默改写任务合同。
 
 ## 推荐更新流程
 
-1. 备份或提交当前工作区；
-2. 查看新版 module registry 和迁移说明；
-3. 在临时目录初始化新版；
-4. 比较 Core Interface 和 schema；
-5. 运行干净安装与旧数据只读兼容测试；
-6. 用户确认后替换 Core；
-7. 回读用户配置、vault 和 checkpoint。
+1. 备份或提交当前实例；
+2. 在临时目录获取并初始化新版；
+3. 运行新版的 `tests/run-all.ps1`；
+4. 比较 release notes、task profile、Schema 和 module registry；
+5. 用匿名 fixture 验证旧数据仍可读，再迁移公共上游文件；
+6. 回读 `.contentos/config.json`、vault、checkpoint 和关键用户资产；
+7. 有破坏性 Schema 变化时，必须同时提供迁移和恢复办法。
 
-## 柔性预算覆盖
+回退只回退公共上游，不删除或回退用户 vault。`lite` 和 `full` 共用同一 canonical manifest，因此切换 profile 不需要搬迁知识资产。
 
-用户可以在 local overrides 中修改 soft target 和 advisory ceiling，但：
+## 适配器升级
 
-- 不得关闭 semantic truncation guard；
-- 不得让预算自动删除承重信息；
-- 增加预算不等于增加权限；
-- 高成本配置应在真实 workload 中观察收益。
-
-## 升级回退
-
-Core 更新应有版本标签。回退只回退 Core 和 profiles，不回退或删除用户 vault。schema 有破坏性变化时必须提供迁移与逆向恢复说明。
+账号、平台、实验 runner、Registry、视觉渲染、KnowledgeOS 等能力通过实例适配器接入。升级适配器前应明确它支持的 TaskKind、读取和写入范围、授权、失败副作用、幂等策略与回读方式。适配器不能重新定义公共任务目标。

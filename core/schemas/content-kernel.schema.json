@@ -1,11 +1,11 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "contentos-lite/content-kernel.schema.json",
+  "$id": "contentos/content-kernel.schema.json",
   "title": "Content Kernel",
   "type": "object",
   "required": ["schema", "reader_problem", "main_judgment", "reasoning_spine", "conclusion_boundary", "user_locks"],
   "properties": {
-    "schema": {"const": "contentos-lite-content-kernel-v1"},
+    "schema": {"const": "contentos-content-kernel-v1"},
     "reader_problem": {"type": "string", "minLength": 1},
     "main_judgment": {"type": "string", "minLength": 1},
     "reasoning_spine": {"type": "array", "minItems": 1, "items": {"type": "string"}},

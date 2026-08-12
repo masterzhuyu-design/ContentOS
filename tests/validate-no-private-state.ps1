@@ -1,12 +1,24 @@
 [CmdletBinding()]
-param([string]$Root = (Split-Path -Parent $PSScriptRoot))
+param([string]$Root)
 
 $ErrorActionPreference = 'Stop'
+if ([string]::IsNullOrWhiteSpace($Root)) {
+    $Root = Split-Path -Parent $PSScriptRoot
+}
 $validator = Join-Path $Root 'scripts\validate-package-sanitization.ps1'
-$result = & $validator -Root $Root | ConvertFrom-Json
-if ($result.status -ne 'passed' -or [int]$result.failure_count -ne 0) {
+$includeGitHistory = Test-Path -LiteralPath (Join-Path $Root '.git') -PathType Container
+$result = & $validator -Root $Root -IncludeGitHistory:$includeGitHistory |
+    ConvertFrom-Json
+if ([string]$result.status -ne 'passed' -or [int]$result.failure_count -ne 0) {
     @($result.failures) | ForEach-Object { "FAIL: $_" }
-    "FAIL: sanitization did not pass"
+    'SUMMARY: no-private-state validation failed'
     exit 1
 }
-"SUMMARY: no-private-state validation passed ($($result.file_count) files)"
+$historySummary = if ($result.history_scanned -and $result.index_scanned) {
+    ", $($result.index_blob_count) staged blobs, " +
+        "$($result.history_blob_count) historical blobs"
+}
+else {
+    ', no Git history in installed fixture'
+}
+"SUMMARY: no-private-state validation passed ($($result.file_count) files$historySummary)"

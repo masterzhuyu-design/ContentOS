@@ -1,11 +1,11 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "contentos-lite/ontology-statement.schema.json",
+  "$id": "contentos/ontology-statement.schema.json",
   "title": "Ontology Statement",
   "type": "object",
   "required": ["schema", "statement_id", "subject", "predicate", "object", "source_pointer", "confidence_state", "status"],
   "properties": {
-    "schema": {"const": "contentos-lite-ontology-statement-v1"},
+    "schema": {"const": "contentos-ontology-statement-v1"},
     "statement_id": {"type": "string", "minLength": 1},
     "subject": {"type": "string", "minLength": 1},
     "predicate": {"enum": ["is_a", "part_of", "causes", "enables", "constrains", "conflicts_with", "variant_of", "evidenced_by", "applies_to", "custom"]},

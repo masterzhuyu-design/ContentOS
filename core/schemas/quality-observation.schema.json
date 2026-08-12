@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "contentos-lite/quality-observation.schema.json",
-  "title": "ContentOS Lite QualityObservation",
+  "$id": "contentos/quality-observation.schema.json",
+  "title": "ContentOS QualityObservation",
   "type": "object",
   "required": [
     "schema",
@@ -12,7 +12,7 @@
   ],
   "properties": {
     "schema": {
-      "const": "contentos-lite-quality-observation-v1"
+      "const": "contentos-quality-observation-v1"
     },
     "observation_id": {
       "type": "string",

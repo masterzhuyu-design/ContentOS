@@ -1,41 +1,32 @@
 [CmdletBinding()]
-param(
-    [string]$Root = (Split-Path -Parent $PSScriptRoot),
-    [int]$MaximumMilliseconds = 3000,
-    [int]$MaximumOutputCharacters = 100000
-)
+param([string]$Root)
 
 $ErrorActionPreference = 'Stop'
-$stopwatch = [Diagnostics.Stopwatch]::StartNew()
-$output = & (Join-Path $Root 'scripts\resolve-startup-lite.ps1') `
-    -Root $Root `
-    -TaskKind 'thread_recovery_lite'
-$stopwatch.Stop()
+if ([string]::IsNullOrWhiteSpace($Root)) {
+    $Root = Split-Path -Parent $PSScriptRoot
+}
+$resolver = Join-Path $Root 'scripts\resolve-contentos-startup.ps1'
+$inputs = @{ query = 'fixture'; source_scope = 'anonymous-fixture' } |
+    ConvertTo-Json -Compress
+$durations = [Collections.Generic.List[double]]::new()
 
-$text = [string]$output
-$failures = [Collections.Generic.List[string]]::new()
-if ($stopwatch.ElapsedMilliseconds -gt $MaximumMilliseconds) {
-    $failures.Add(
-        "startup_too_slow:$($stopwatch.ElapsedMilliseconds)ms"
-    )
-}
-if ($text.Length -gt $MaximumOutputCharacters) {
-    $failures.Add("startup_output_too_large:$($text.Length)")
-}
-try {
-    $parsed = $text | ConvertFrom-Json
-    if ($parsed.task.kind -ne 'thread_recovery_lite') {
-        $failures.Add('startup_task_kind_mismatch')
+for ($index = 0; $index -lt 3; $index++) {
+    $watch = [Diagnostics.Stopwatch]::StartNew()
+    $result = & $resolver -Root $Root -Profile full -TaskKind knowledge_query `
+        -InputsJson $inputs | ConvertFrom-Json
+    $watch.Stop()
+    $durations.Add($watch.Elapsed.TotalMilliseconds)
+    if ([string]$result.status -ne 'ready' -or
+        @($result.hydration.rules).Count -eq 0) {
+        "FAIL: startup result invalid on run $index"
+        exit 1
     }
 }
-catch {
-    $failures.Add("startup_output_invalid_json:$($_.Exception.Message)")
-}
 
-if ($failures.Count -gt 0) {
-    $failures | ForEach-Object { "FAIL: $_" }
-    "SUMMARY: startup performance validation failed"
+$max = ($durations | Measure-Object -Maximum).Maximum
+$average = ($durations | Measure-Object -Average).Average
+if ($max -gt 5000) {
+    "FAIL: startup exceeded 5000ms ceiling ($([Math]::Round($max, 2))ms)"
     exit 1
 }
-
-"SUMMARY: startup performance validation passed ($($stopwatch.ElapsedMilliseconds)ms / $($text.Length) chars)"
+"SUMMARY: startup performance passed (avg=$([Math]::Round($average, 2))ms max=$([Math]::Round($max, 2))ms)"

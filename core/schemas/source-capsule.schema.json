@@ -1,11 +1,11 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "contentos-lite/source-capsule.schema.json",
+  "$id": "contentos/source-capsule.schema.json",
   "title": "Source Capsule",
   "type": "object",
   "required": ["schema", "source_id", "title", "pointer", "supports", "limitations"],
   "properties": {
-    "schema": {"const": "contentos-lite-source-capsule-v1"},
+    "schema": {"const": "contentos-source-capsule-v1"},
     "source_id": {"type": "string", "minLength": 1},
     "title": {"type": "string", "minLength": 1},
     "creator_or_publisher": {"type": "string"},

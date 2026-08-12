@@ -1,11 +1,11 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "contentos-lite/reusable-asset.schema.json",
+  "$id": "contentos/reusable-asset.schema.json",
   "title": "Reusable Asset",
   "type": "object",
   "required": ["schema", "asset_id", "asset_type", "title", "summary", "mechanism", "boundaries", "source_pointers", "body_pointer"],
   "properties": {
-    "schema": {"const": "contentos-lite-reusable-asset-v1"},
+    "schema": {"const": "contentos-reusable-asset-v1"},
     "asset_id": {"type": "string", "minLength": 1},
     "asset_type": {"enum": ["concept", "model", "case", "structure", "technique", "source"]},
     "title": {"type": "string", "minLength": 1},

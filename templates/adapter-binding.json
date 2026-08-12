@@ -1,0 +1,12 @@
+{
+  "schema": "contentos-adapter-binding-v1",
+  "adapter_id": "replace-with-profile-adapter-id",
+  "version": "1.0.0",
+  "task_kind": "replace-with-canonical-task-kind",
+  "read_scope": ["replace-with-authorized-source"],
+  "write_scope": [],
+  "authorization": "read_only_or_explicit_action_authority",
+  "retry_semantics": "none",
+  "output_schema": "replace-with-output-schema",
+  "readback": "replace-with-verifiable-result-pointer"
+}

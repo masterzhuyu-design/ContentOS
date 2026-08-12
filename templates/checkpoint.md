@@ -1,5 +1,5 @@
 ---
-schema: contentos-lite-checkpoint-v1
+schema: contentos-checkpoint-v1
 status: resumable
 task_kind:
 current_stage:
@@ -8,7 +8,7 @@ evidence_pointers: []
 pending: []
 authorities: []
 protected_boundaries: []
-next_required_reads: ["scripts/resolve-startup-lite.ps1"]
+next_required_reads: ["scripts/resolve-contentos-startup.ps1"]
 updated_at:
 ---
 

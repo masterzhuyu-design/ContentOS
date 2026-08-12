@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "contentos/adapter-binding.schema.json",
+  "title": "ContentOS Adapter Binding",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema", "adapter_id", "version", "task_kind", "read_scope",
+    "write_scope", "authorization", "retry_semantics", "output_schema", "readback"
+  ],
+  "properties": {
+    "schema": {"const": "contentos-adapter-binding-v1"},
+    "adapter_id": {"type": "string", "minLength": 1},
+    "version": {"type": "string", "minLength": 1},
+    "task_kind": {"type": "string", "minLength": 1},
+    "read_scope": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+    "write_scope": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "authorization": {"type": "string", "minLength": 1},
+    "retry_semantics": {"enum": ["none", "idempotent", "explicit_only"]},
+    "output_schema": {"type": "string", "minLength": 1},
+    "readback": {"type": "string", "minLength": 1}
+  }
+}

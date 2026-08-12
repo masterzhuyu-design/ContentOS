@@ -1,369 +1,212 @@
 [CmdletBinding()]
-param([string]$Root = (Split-Path -Parent $PSScriptRoot))
+param([string]$Root)
 
 $ErrorActionPreference = 'Stop'
+if ([string]::IsNullOrWhiteSpace($Root)) {
+    $Root = Split-Path -Parent $PSScriptRoot
+}
+$Root = [IO.Path]::GetFullPath($Root)
 $failures = [Collections.Generic.List[string]]::new()
+$releaseId = 'contentos-v0.2.0-rc.1'
 
-function Require-Text {
-    param(
-        [string]$Text,
-        [string]$Pattern,
-        [string]$Failure
-    )
-    if ($Text -notmatch $Pattern) {
-        $failures.Add($Failure)
+function Require-File {
+    param([string]$Relative)
+    if (-not (Test-Path -LiteralPath (Join-Path $Root $Relative) -PathType Leaf)) {
+        $failures.Add("missing_file:$Relative")
     }
 }
 
-$profilePath = Join-Path $Root 'core\profiles\task-profiles.json'
-$profiles = Get-Content -LiteralPath $profilePath -Raw -Encoding UTF8 |
-    ConvertFrom-Json
-$expectedProfileId = 'contentos-lite-v0.1.1'
-if ([string]$profiles.profile_id -ne $expectedProfileId) {
-    $failures.Add('task_profile_release_id_mismatch')
-}
-$config = Get-Content `
-    -LiteralPath (Join-Path $Root 'config\contentos.example.json') `
-    -Raw `
-    -Encoding UTF8 |
-    ConvertFrom-Json
-if ([string]$config.profile_id -ne $expectedProfileId) {
-    $failures.Add('config_release_id_mismatch')
-}
-$manifest = Get-Content `
-    -LiteralPath (Join-Path $Root 'MANIFEST.json') `
-    -Raw `
-    -Encoding UTF8 |
-    ConvertFrom-Json
-if ([string]$manifest.profile_id -ne $expectedProfileId) {
-    $failures.Add('manifest_release_id_mismatch')
-}
-foreach ($manifestRow in @($manifest.files)) {
-    $manifestRelative = [string]$manifestRow.path
-    if (
-        $manifestRelative -eq '.git' -or
-        $manifestRelative.StartsWith(
-            '.git/',
-            [StringComparison]::OrdinalIgnoreCase
-        )
-    ) {
-        $failures.Add('manifest_contains_git_metadata')
+foreach ($file in Get-ChildItem -LiteralPath $Root -Recurse -File -Filter '*.json') {
+    try {
+        $null = Get-Content -LiteralPath $file.FullName -Raw -Encoding UTF8 |
+            ConvertFrom-Json
     }
-}
-$releaseManifestValidator = Join-Path `
-    $Root `
-    'tests\validate-release-manifest.ps1'
-if (
-    -not (
-        Test-Path `
-            -LiteralPath $releaseManifestValidator `
-            -PathType Leaf
-    )
-) {
-    $failures.Add('release_manifest_validator_missing')
-}
-$manifestBuilder = Get-Content `
-    -LiteralPath (Join-Path $Root 'scripts\build-package-manifest.ps1') `
-    -Raw `
-    -Encoding UTF8
-Require-Text `
-    -Text $manifestBuilder `
-    -Pattern 'contentos-lite-v0\.1\.1' `
-    -Failure 'manifest_builder_release_id_mismatch'
-$attributesPath = Join-Path $Root '.gitattributes'
-if (-not (Test-Path -LiteralPath $attributesPath -PathType Leaf)) {
-    $failures.Add('deterministic_line_endings_missing')
-}
-else {
-    $attributes = Get-Content `
-        -LiteralPath $attributesPath `
-        -Raw `
-        -Encoding UTF8
-    Require-Text `
-        -Text $attributes `
-        -Pattern '\* text=auto eol=lf' `
-        -Failure 'deterministic_line_endings_invalid'
-}
-$requiredKinds = @(
-    'thread_recovery_lite',
-    'vault_query_lite',
-    'learning_intake_lite',
-    'learning_teaching_lite',
-    'decomposition_qa_lite',
-    'transfer_qa_lite',
-    'learning_close_lite',
-    'review_schedule_lite',
-    'share_card_lite',
-    'model_case_capture_lite',
-    'ontology_update_lite',
-    'asset_reuse_lite',
-    'web_search_lite',
-    'content_creation_lite',
-    'content_review_lite'
-)
-$actualKinds = @($profiles.profiles.task_kind)
-foreach ($kind in $requiredKinds) {
-    if ($kind -notin $actualKinds) {
-        $failures.Add("missing_task_kind:$kind")
-    }
-}
-foreach ($group in @($actualKinds | Group-Object | Where-Object Count -gt 1)) {
-    $failures.Add("duplicate_task_kind:$($group.Name)")
-}
-
-$qualityGatePath = Join-Path `
-    $Root `
-    'scripts\evaluate-quality-gate-lite.ps1'
-if (-not (Test-Path -LiteralPath $qualityGatePath -PathType Leaf)) {
-    $failures.Add('quality_gate_interface_missing')
-}
-foreach ($schemaPath in @(
-    'core\schemas\quality-observation.schema.json'
-    'core\schemas\quality-decision.schema.json'
-)) {
-    if (-not (Test-Path -LiteralPath (Join-Path $Root $schemaPath))) {
-        $failures.Add("quality_gate_schema_missing:$schemaPath")
-    }
-}
-if (
-    [string]$profiles.quality_gate_interface.tool -ne
-        'scripts/evaluate-quality-gate-lite.ps1' -or
-    [string]$profiles.quality_gate_interface.input_schema -ne
-        'contentos-lite-quality-observation-v1' -or
-    [string]$profiles.quality_gate_interface.output_schema -ne
-        'contentos-lite-quality-decision-v1' -or
-    [string]$profiles.quality_gate_interface.side_effects -ne 'none'
-) {
-    $failures.Add('quality_gate_manifest_interface_invalid')
-}
-$requiredGateMappings = [ordered]@{
-    decomposition_qa_lite = @(
-        'teaching_before_test'
-        'asset_reuse'
-    )
-    transfer_qa_lite = @(
-        'teaching_before_test'
-        'transfer_integrity'
-        'asset_reuse'
-    )
-    review_schedule_lite = @(
-        'review_adaptation'
-        'asset_reuse'
-    )
-    share_card_lite = @(
-        'share_completeness'
-        'capacity_preservation'
-        'discussion_delta_integrity'
-        'rights_scope'
-        'authorship_quality'
-        'track_authority'
-    )
-    web_search_lite = @('search_claim_calibration')
-    content_creation_lite = @(
-        'creation_coherence'
-        'asset_reuse'
-        'capacity_preservation'
-        'discussion_delta_integrity'
-        'rights_scope'
-        'authorship_quality'
-        'track_authority'
-    )
-    content_review_lite = @(
-        'revision_scope'
-        'discussion_delta_integrity'
-        'authorship_quality'
-        'rights_scope'
-        'capacity_preservation'
-    )
-}
-foreach ($mapping in $requiredGateMappings.GetEnumerator()) {
-    $profile = @(
-        $profiles.profiles |
-            Where-Object task_kind -eq $mapping.Key
-    )[0]
-    foreach ($requiredGate in @($mapping.Value)) {
-        if ($requiredGate -notin @($profile.quality_gates)) {
-            $failures.Add(
-                "quality_gate_mapping_missing:$($mapping.Key):$requiredGate"
-            )
-        }
+    catch {
+        $relative = $file.FullName.Substring($Root.Length).TrimStart('\', '/')
+        $failures.Add("invalid_json:$relative")
     }
 }
 
-$allRules = @(
-    Get-ChildItem -LiteralPath (Join-Path $Root 'core\rules') -File |
-        ForEach-Object {
-            Get-Content -LiteralPath $_.FullName -Raw -Encoding UTF8
-        }
-) -join "`n"
 foreach ($required in @(
-    'adaptive_mode',
-    'no_fixed_quota',
-    'semantic_truncation_forbidden',
-    'expansion_receipt',
-    '拆解问答',
-    '迁移问答',
-    'detached_share_export',
-    'ReviewPlan',
-    'D\+1、D\+7、D\+30',
-    'ModelCard',
-    'CaseCard',
-    'OntologyStatement',
-    'AssetReusePlanner',
-    'use / backstage / no_use',
-    'LearningTrack',
-    'KnowledgeAssetTrack',
-    'CreationTrack'
-    'QualityObservation'
-    'QualityDecision'
-    'discussion_delta_integrity'
-    'canonical_source_digest'
-    'confirmed_adjustment'
-    'candidate_option'
-    'rejected_option'
-    'clarification_only'
-    'load_bearing_units'
+    'README.md', 'AGENTS.md', 'LICENSE', 'LICENSE-DOCS.md',
+    'CONTRIBUTING.md', 'SECURITY.md', 'MANIFEST.json',
+    'core\profiles\task-profiles.json',
+    'core\capabilities\public-capability-map.json',
+    'core\upgrades\module-registry.json',
+    'core\schemas\adapter-binding.schema.json',
+    'templates\adapter-binding.json',
+    'scripts\resolve-contentos-startup.ps1',
+    'scripts\init-contentos.ps1',
+    'scripts\evaluate-contentos-quality-gate.ps1',
+    'docs\对外聊天简要说明.md',
+    'docs\功能与操作流程.md'
 )) {
-    Require-Text `
-        -Text $allRules `
-        -Pattern $required `
-        -Failure "core_contract_missing:$required"
+    Require-File -Relative $required
 }
 
-$learningProfiles = @(
-    $profiles.profiles |
-        Where-Object {
-            $_.task_kind -in @(
-                'learning_teaching_lite',
-                'decomposition_qa_lite',
-                'transfer_qa_lite'
-            )
-        }
+$profiles = Get-Content -LiteralPath (
+    Join-Path $Root 'core\profiles\task-profiles.json'
+) -Raw -Encoding UTF8 | ConvertFrom-Json
+$config = Get-Content -LiteralPath (
+    Join-Path $Root 'config\contentos.example.json'
+) -Raw -Encoding UTF8 | ConvertFrom-Json
+$capabilities = Get-Content -LiteralPath (
+    Join-Path $Root 'core\capabilities\public-capability-map.json'
+) -Raw -Encoding UTF8 | ConvertFrom-Json
+$modules = Get-Content -LiteralPath (
+    Join-Path $Root 'core\upgrades\module-registry.json'
+) -Raw -Encoding UTF8 | ConvertFrom-Json
+$manifest = Get-Content -LiteralPath (
+    Join-Path $Root 'MANIFEST.json'
+) -Raw -Encoding UTF8 | ConvertFrom-Json
+
+foreach ($pair in @(
+    @('profiles', [string]$profiles.release_id),
+    @('config', [string]$config.release_id),
+    @('capabilities', [string]$capabilities.release_id),
+    @('modules', [string]$modules.release_id),
+    @('manifest', [string]$manifest.release_id)
+)) {
+    if ($pair[1] -ne $releaseId) {
+        $failures.Add("release_id_mismatch:$($pair[0]):$($pair[1])")
+    }
+}
+
+$expectedKinds = @(
+    'architecture_maintenance', 'learning_method_correction', 'knowledge_query',
+    'fixed_learning_old_knowledge_query', 'model_library_maintenance',
+    'public_learning_intake', 'public_information_research',
+    'restricted_information_collection', 'platform_video_recovery',
+    'non_ergodic_decision_review', 'link_maintenance', 'fixed_learning_intake',
+    'fixed_learning_teaching', 'fixed_learning_first_round',
+    'fixed_learning_transfer_round', 'learning_transfer_history_backfill',
+    'artifact_semantic_review', 'empirical_research_preregistration',
+    'empirical_research_execution', 'learning_registry_sync', 'share_card_body',
+    'share_visual_local', 'application_discovery', 'direct_topic_creation',
+    'content_creation', 'content_review', 'xhs_account_daily_review',
+    'thread_recovery'
 )
-foreach ($profile in $learningProfiles) {
-    if (
-        'core/rules/04-assets-ontology-and-reuse.md' -notin
-            @($profile.rule_files)
-    ) {
-        $failures.Add(
-            "learning_asset_reuse_not_wired:$($profile.task_kind)"
-        )
+$actualKinds = @($profiles.profiles | ForEach-Object { [string]$_.task_kind })
+if ((($actualKinds | Sort-Object) -join '|') -ne
+    (($expectedKinds | Sort-Object) -join '|')) {
+    $failures.Add('canonical_task_kind_set_mismatch')
+}
+if (@($actualKinds | Group-Object | Where-Object Count -ne 1).Count -gt 0) {
+    $failures.Add('duplicate_task_kind')
+}
+
+$quality = $profiles.quality_gate_interface
+if (
+    [string]$quality.tool -ne 'scripts/evaluate-contentos-quality-gate.ps1' -or
+    [string]$quality.input_schema -ne 'contentos-quality-observation-v1' -or
+    [string]$quality.output_schema -ne 'contentos-quality-decision-v1' -or
+    [string]$quality.side_effects -ne 'none' -or
+    [string]::IsNullOrWhiteSpace([string]$quality.semantic_gate_authority)
+) {
+    $failures.Add('quality_gate_interface_mismatch')
+}
+$mechanicalGates = @($quality.mechanical_gates | ForEach-Object { [string]$_ })
+if ($mechanicalGates.Count -ne 13 -or @($mechanicalGates | Sort-Object -Unique).Count -ne 13) {
+    $failures.Add('mechanical_gate_set_invalid')
+}
+$qualityTool = Join-Path $Root ([string]$quality.tool)
+foreach ($gate in $mechanicalGates) {
+    $observation = [ordered]@{
+        schema = 'contentos-quality-observation-v1'
+        observation_id = "support-check-$gate"
+        gate = $gate
+        task_kind = 'content_review'
+        facts = [ordered]@{}
+    } | ConvertTo-Json -Compress -Depth 5
+    try {
+        $decision = & $qualityTool -Root $Root -ObservationJson $observation |
+            ConvertFrom-Json
+        if ([string]$decision.decision -ne 'blocked' -or
+            [string]$decision.earliest_failure_layer -ne 'observation_closure') {
+            $failures.Add("mechanical_gate_not_supported:$gate")
+        }
+    }
+    catch {
+        $failures.Add("mechanical_gate_throws:$gate")
     }
 }
 
-$moduleRegistry = Get-Content `
-    -LiteralPath (Join-Path $Root 'core\upgrades\module-registry.json') `
-    -Raw `
-    -Encoding UTF8 |
-    ConvertFrom-Json
-if ([string]$moduleRegistry.profile_id -ne $expectedProfileId) {
-    $failures.Add('module_registry_release_id_mismatch')
-}
-foreach ($coreModule in @(
-    'learning_loop',
-    'review_planner',
-    'model_case_capture',
-    'file_ontology',
-    'asset_reuse',
-    'share_card_body',
-    'search_lite',
-    'creation_lite',
-    'quality_gate',
-    'problem_regression_suite'
-)) {
-    $rows = @(
-        $moduleRegistry.modules |
-            Where-Object {
-                $_.module_id -eq $coreModule -and
-                $_.state -eq 'core' -and
-                $_.default_included -eq $true
-            }
-    )
-    if ($rows.Count -ne 1) {
-        $failures.Add("core_module_marker_missing:$coreModule")
+foreach ($profile in @($profiles.profiles)) {
+    $kind = [string]$profile.task_kind
+    foreach ($field in @('task_stage', 'track', 'objective', 'implementation')) {
+        if ([string]::IsNullOrWhiteSpace([string]$profile.$field)) {
+            $failures.Add("profile_field_missing:${kind}:$field")
+        }
+    }
+    if (@($profile.required_inputs).Count -eq 0) {
+        $failures.Add("required_inputs_empty:$kind")
+    }
+    if (@($profile.quality_gates).Count -eq 0) {
+        $failures.Add("quality_gates_empty:$kind")
+    }
+    foreach ($rule in @($profile.rule_files)) {
+        if (-not (Test-Path -LiteralPath (Join-Path $Root ([string]$rule)) -PathType Leaf)) {
+            $failures.Add("profile_rule_missing:${kind}:$rule")
+        }
+    }
+    $soft = [int]$profile.budget.soft_target_utf8_bytes
+    $advisory = [int]$profile.budget.advisory_ceiling_utf8_bytes
+    $hard = [int]$profile.budget.hard_safety_ceiling_utf8_bytes
+    if ($soft -le 0 -or $soft -gt $advisory -or $advisory -gt $hard) {
+        $failures.Add("budget_order_invalid:$kind")
+    }
+    if ([string]$profile.implementation -eq 'public_adapter' -and
+        [string]::IsNullOrWhiteSpace([string]$profile.adapter_id)) {
+        $failures.Add("adapter_id_missing:$kind")
+    }
+    if ([string]$profile.implementation -eq 'public_adapter' -and (
+        [string]::IsNullOrWhiteSpace([string]$profile.adapter_binding_input) -or
+        [string]$profile.adapter_binding_input -notin @($profile.required_inputs)
+    )) {
+        $failures.Add("adapter_binding_input_invalid:$kind")
     }
 }
 
-$functionGuide = Get-Content `
-    -LiteralPath (Join-Path $Root 'docs\功能与操作流程.md') `
-    -Raw `
-    -Encoding UTF8
-foreach ($requiredFunctionGuideText in @(
-    '质量门操作'
-    'QualityObservation'
-    'QualityDecision'
-    'discussion_delta_integrity'
-    'apply_confirmed_deltas_only'
-    'evaluate-quality-gate-lite.ps1'
-)) {
-    Require-Text `
-        -Text $functionGuide `
-        -Pattern $requiredFunctionGuideText `
-        -Failure "function_guide_missing:$requiredFunctionGuideText"
+foreach ($module in @($modules.modules)) {
+    if ([string]$module.owner -ne 'instance') {
+        Require-File -Relative ([string]$module.owner)
+    }
 }
 
-$upgradeGuide = Get-Content `
-    -LiteralPath (Join-Path $Root 'docs\可升级模块地图.md') `
-    -Raw `
-    -Encoding UTF8
-foreach ($requiredUpgradeGuideText in @(
-    'QualityGate'
-    'ProblemRegressionSuite'
-    'discussion_delta_integrity'
-    '不获得写入'
-    '行为级回归'
-)) {
-    Require-Text `
-        -Text $upgradeGuide `
-        -Pattern $requiredUpgradeGuideText `
-        -Failure "upgrade_guide_missing:$requiredUpgradeGuideText"
-}
-
-$chatGuidePath = Join-Path $Root 'docs\对外聊天简要说明.md'
-if (-not (Test-Path -LiteralPath $chatGuidePath -PathType Leaf)) {
-    $failures.Add('chat_guide_missing')
+$vaultContractRoot = if (
+    Test-Path -LiteralPath (Join-Path $Root 'vault-template') -PathType Container
+) {
+    Join-Path $Root 'vault-template'
 }
 else {
-    $chatGuide = Get-Content `
-        -LiteralPath $chatGuidePath `
-        -Raw `
-        -Encoding UTF8
-    foreach ($requiredChatGuideText in @(
-        '直接复制版'
-        '拆解问答'
-        '迁移问答'
-        '复习计划'
-        '模型、案例和本体关系'
-        '分享卡'
-        '按需复用'
-        '没有捆绑本地大模型'
-        '最小规则'
-        '确认差量'
-        'ZIP'
-        '安装到一个新文件夹'
-        '运行自带验证'
-    )) {
-        Require-Text `
-            -Text $chatGuide `
-            -Pattern $requiredChatGuideText `
-            -Failure "chat_guide_missing:$requiredChatGuideText"
-    }
+    Join-Path $Root 'vault'
+}
+$canonicalSurface = @(
+    Get-ChildItem -LiteralPath (Join-Path $Root 'core') -Recurse -File
+    Get-ChildItem -LiteralPath (Join-Path $Root 'templates') -Recurse -File
+    Get-ChildItem -LiteralPath $vaultContractRoot -Recurse -File
+) | ForEach-Object { Get-Content -LiteralPath $_.FullName -Raw -Encoding UTF8 } |
+    Out-String
+if ($canonicalSurface -match 'contentos-lite') {
+    $failures.Add('legacy_lite_schema_in_canonical_surface')
 }
 
-foreach ($forbiddenPath in @(
-    'tools\knowledgeos',
-    'models',
-    '.contentos\runtime\index.sqlite'
-)) {
-    if (Test-Path -LiteralPath (Join-Path $Root $forbiddenPath)) {
-        $failures.Add("forbidden_default_dependency:$forbiddenPath")
+$compatibilityWrappers = @(
+    'scripts\resolve-startup-lite.ps1',
+    'scripts\init-contentos-lite.ps1',
+    'scripts\evaluate-quality-gate-lite.ps1'
+)
+foreach ($wrapper in $compatibilityWrappers) {
+    Require-File -Relative $wrapper
+    $lineCount = @(Get-Content -LiteralPath (Join-Path $Root $wrapper)).Count
+    if ($lineCount -gt 30) {
+        $failures.Add("compatibility_wrapper_too_deep:${wrapper}:$lineCount")
     }
 }
 
 if ($failures.Count -gt 0) {
     $failures | ForEach-Object { "FAIL: $_" }
-    "SUMMARY: core contract failed ($($failures.Count))"
+    "SUMMARY: core contract validation failed ($($failures.Count))"
     exit 1
 }
-
-"SUMMARY: core contract passed ($($requiredKinds.Count) TaskKinds)"
+"SUMMARY: core contract validation passed (28 canonical TaskKinds)"

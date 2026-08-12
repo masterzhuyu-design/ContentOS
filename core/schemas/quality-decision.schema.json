@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "contentos-lite/quality-decision.schema.json",
-  "title": "ContentOS Lite QualityDecision",
+  "$id": "contentos/quality-decision.schema.json",
+  "title": "ContentOS QualityDecision",
   "type": "object",
   "required": [
     "schema",
@@ -19,7 +19,7 @@
   ],
   "properties": {
     "schema": {
-      "const": "contentos-lite-quality-decision-v1"
+      "const": "contentos-quality-decision-v1"
     },
     "status": {
       "const": "valid"

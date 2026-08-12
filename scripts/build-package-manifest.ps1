@@ -1,10 +1,13 @@
 [CmdletBinding()]
 param(
-    [string]$Root = (Split-Path -Parent $PSScriptRoot),
+    [string]$Root,
     [switch]$Pretty
 )
 
 $ErrorActionPreference = 'Stop'
+if ([string]::IsNullOrWhiteSpace($Root)) {
+    $Root = Split-Path -Parent $PSScriptRoot
+}
 $rootFull = [IO.Path]::GetFullPath($Root).TrimEnd('\', '/')
 $manifestPath = Join-Path $rootFull 'MANIFEST.json'
 
@@ -25,8 +28,8 @@ $rows = @(
                 TrimStart('\', '/').Replace('\', '/')
             $licenseClass = if (
                 $relative -match
-                    '^(scripts|tests|core/schemas)/' -or
-                $relative -eq 'LICENSE-CODE'
+                    '^(scripts|tests|config|\.github|core/(schemas|profiles|capabilities|upgrades))/' -or
+                $relative -in @('LICENSE', 'LICENSE-CODE')
             ) {
                 'MIT'
             }
@@ -34,7 +37,7 @@ $rows = @(
                 'empty_directory_marker'
             }
             else {
-                'CC-BY-NC-SA-4.0'
+                'CC-BY-SA-4.0'
             }
             [ordered]@{
                 path = $relative
@@ -49,8 +52,8 @@ $rows = @(
 )
 
 $manifest = [ordered]@{
-    schema = 'contentos-lite-package-manifest-v1'
-    profile_id = 'contentos-lite-v0.1.1'
+    schema = 'contentos-package-manifest-v1'
+    release_id = 'contentos-v0.2.0-rc.1'
     generated_at = (Get-Date).ToString('o')
     manifest_self_excluded = $true
     file_count = $rows.Count
@@ -68,14 +71,15 @@ $json = if ($Pretty) {
 else {
     $manifest | ConvertTo-Json -Depth 7 -Compress
 }
+$json = $json.Replace("`r`n", "`n").Replace("`r", "`n")
 [IO.File]::WriteAllText(
     $manifestPath,
-    $json + [Environment]::NewLine,
+    $json + "`n",
     [Text.UTF8Encoding]::new($false)
 )
 
 [ordered]@{
-    schema = 'contentos-lite-manifest-build-receipt-v1'
+    schema = 'contentos-manifest-build-receipt-v1'
     status = 'built'
     manifest_path = $manifestPath
     file_count = $rows.Count

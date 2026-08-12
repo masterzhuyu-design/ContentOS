@@ -1,26 +1,34 @@
-# ContentOS Lite 统一入口
+# ContentOS 统一入口
 
-1. 先读取 `.contentos/config.json`；若尚未初始化，读取 `config/contentos.example.json`。
-2. 取得稳定 `TaskKind` 后运行：
+## 启动
+
+1. 读取 `.contentos/config.json`；未初始化时读取 `config/contentos.example.json`。
+2. 从 `core/profiles/task-profiles.json` 选择稳定 TaskKind，不用聊天临时名称替代。
+3. 运行：
 
 ```powershell
-.\scripts\resolve-startup-lite.ps1 -TaskKind <kind>
+.\scripts\resolve-contentos-startup.ps1 -Profile <full|lite> -TaskKind <kind> -InputsJson <json>
 ```
 
-3. 只有返回 `status=ready` 且 `generation_allowed=true` 才执行任务。缺输入、预算溢出、路径越界或权限不足时停在返回状态，不自由补写。
-4. 任务结束只写用户授权的目标和 checkpoint；不得自动发布、删除、移动、登录账号、创建线程或启动自动任务。
+4. 只有 `status=ready`、`task_execution.status=ready` 和 `generation_allowed=true` 才执行。规则已加载不等于输入、适配器或权限已经闭合。
 
-## 核心不变量
+## 工作方式
 
-- Markdown/JSON 是真相源；缓存、索引和运行回执不是。
-- LearningTrack、KnowledgeAssetTrack、CreationTrack 分离。完成学习、收录资产或生成分享卡都不自动开启 CreationTrack。
-- 学习顺序保持：材料拆解 → 直接教学 → 拆解问答 → 迁移问答 → 学习收束 → 复习计划；普通分享卡是可选的 detached export。
-- 模型、案例、概念和本体关系先形成可回读对象，再进入复用索引；复用只先读摘要，选中后才读正文。
-- 搜索与创作采用 `adaptive_mode`：默认值是柔性起点，不是固定配额。扩展由风险、证据缺口、复杂度或用户要求触发。
-- `semantic_truncation_forbidden`：Token/byte 预算只能减少脚手架、重复候选和原始载荷，不能删除承重观点、完整案例、问答依赖或用户锁定内容。
-- 分享卡默认只交正文；图文、视频、平台版本与发布均需独立明确请求。
-- 本地大模型、Ollama、KnowledgeOS、向量索引和 GraphRAG 不属于 v0.1 默认运行依赖。
+- 先判断任务是讨论、直接成品、执行修改还是组合；内部审查不直接污染对外成品。
+- 默认先给当前最佳判断或干净成品。只展示会改变结论、行动或风险的依据，不倾倒流程日志和治理术语。
+- LearningTrack、KnowledgeAssetTrack、CreationTrack 分离。学习完成、资产收录和普通分享都不自动启动创作或发布。
+- 每次有效学习作答后触发一次轻量旧知识增益检查；只在有净增益时读取具体候选，不把知识库常驻进上下文。
+- 搜索、模型、案例、轮次和字节预算都是柔性起点，不是平均化配额。极端风险任务先守 ruin boundary；普通任务不套重大决策仪式。
+- 历史、虚构或特殊世界观从作品内部逻辑推演，不擅自补现代人类法律、年龄标准、报应或说教。
 
-## TaskKind
+## 写入与维护
 
-稳定入口见 `core/profiles/task-profiles.json`。不要用聊天中临时名称替代 TaskKind，也不要为了方便同时加载全部规则。
+- `vault/` 内的 Markdown/JSON 是实例真相源；`.contentos/runtime/` 只保存可恢复状态和紧凑回执。
+- 只写当前明确授权的目标。发布、账号写入、实验执行、调度和不可逆删除都需要独立授权。
+- 公共核心拥有 TaskKind、对象、状态转换和适配器接口；私人实例拥有个人资料、Registry、checkpoint、凭据和平台绑定。
+- 发现重复问题时在唯一 owner 修根因：重复的合并，冲突的修改，失效的删除；不要继续堆补丁、helper 或第二真相源。
+- 完成必须有实际修改、回读、行为验证和副作用检查。计划、测试数量和回执数量不能冒充功能结果。
+
+## 兼容与 profile
+
+`full` 和 `lite` 都读取同一份 canonical task manifest。Lite 兼容脚本只转发到 canonical 入口，不拥有独立规则。适配器缺失时明确阻断，不得把“可选加载”解释成“这项功能以后不用”。

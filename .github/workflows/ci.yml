@@ -1,0 +1,19 @@
+name: ContentOS validation
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  windows-powershell:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Run ContentOS behavior and release checks
+        shell: powershell
+        run: .\tests\run-all.ps1

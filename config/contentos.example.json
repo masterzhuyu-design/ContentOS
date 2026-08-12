@@ -1,6 +1,7 @@
 {
-  "schema": "contentos-lite-config-v1",
-  "profile_id": "contentos-lite-v0.1.1",
+  "schema": "contentos-config-v1",
+  "release_id": "contentos-v0.2.0-rc.1",
+  "active_profile": "full",
   "language": "zh-CN",
   "paths": {
     "vault_root": "vault",
@@ -15,11 +16,11 @@
     "model_case_capture": true,
     "file_ontology": true,
     "asset_reuse": true,
-    "web_search_lite": true,
-    "content_creation_lite": true,
-    "local_llm": false,
-    "knowledgeos": false,
-    "semantic_index": false,
+    "evidence_research": true,
+    "content_creation": true,
+    "artifact_semantic_review": true,
+    "knowledgeos_adapter": false,
+    "platform_adapters": false,
     "automatic_publish": false,
     "automatic_scheduler": false
   },
@@ -32,12 +33,6 @@
   "review_policy": {
     "starting_intervals_days": [1, 7, 30],
     "adaptive": true,
-    "reschedule_signals": [
-      "retrieval_failure",
-      "boundary_confusion",
-      "transfer_failure",
-      "high_importance",
-      "stable_mastery"
-    ]
+    "reschedule_signals": ["retrieval_failure", "boundary_confusion", "transfer_failure", "high_importance", "stable_mastery"]
   }
 }

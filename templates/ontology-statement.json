@@ -1,5 +1,5 @@
 {
-  "schema": "contentos-lite-ontology-statement-v1",
+  "schema": "contentos-ontology-statement-v1",
   "statement_id": "STATEMENT-ID",
   "subject": "",
   "predicate": "custom",

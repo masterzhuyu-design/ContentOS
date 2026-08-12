@@ -1,11 +1,11 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "contentos-lite/review-plan.schema.json",
+  "$id": "contentos/review-plan.schema.json",
   "title": "Adaptive Review Plan",
   "type": "object",
   "required": ["schema", "plan_id", "learning_session_pointer", "adaptive", "review_items"],
   "properties": {
-    "schema": {"const": "contentos-lite-review-plan-v1"},
+    "schema": {"const": "contentos-review-plan-v1"},
     "plan_id": {"type": "string", "minLength": 1},
     "learning_session_pointer": {"type": "string", "minLength": 1},
     "adaptive": {"const": true},

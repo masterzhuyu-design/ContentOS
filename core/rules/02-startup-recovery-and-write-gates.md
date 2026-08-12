@@ -4,7 +4,7 @@
 
 1. 取得 TaskKind。
 2. 读取当前 checkpoint 指针。
-3. 运行 `scripts/resolve-startup-lite.ps1`。
+3. 运行 `scripts/resolve-contentos-startup.ps1`，明确 TaskKind、profile 和任务输入。
 4. 只在 `status=ready` 和 `generation_allowed=true` 时执行。
 
 规则加载完成不等于输入闭合。缺材料、目标、既有工作处置、用户锁定项或证据时，必须返回缺口。
