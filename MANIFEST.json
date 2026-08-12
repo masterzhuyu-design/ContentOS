@@ -1,10 +1,10 @@
 {
     "schema":  "contentos-package-manifest-v1",
     "release_id":  "contentos-v0.2.0-rc.1",
-    "generated_at":  "2026-08-12T20:51:23.0564163+08:00",
+    "generated_at":  "2026-08-12T20:54:30.6705122+08:00",
     "manifest_self_excluded":  true,
     "file_count":  92,
-    "total_bytes":  222238,
+    "total_bytes":  222818,
     "files":  [
                   {
                       "path":  "templates/ontology-statement.json",
@@ -218,8 +218,8 @@
                   },
                   {
                       "path":  "tests/validate-powershell-syntax.ps1",
-                      "bytes":  932,
-                      "sha256":  "50ffa577c7b82eddd61b13898a1599be927491d0603bc153ab5ab4626396e701",
+                      "bytes":  1509,
+                      "sha256":  "de3e5806edb171b79814d604a3db39b1513af4d079445e20d784550f1dc25de2",
                       "license_class":  "MIT"
                   },
                   {
@@ -236,8 +236,8 @@
                   },
                   {
                       "path":  "tests/validate-core-contract.ps1",
-                      "bytes":  8171,
-                      "sha256":  "24836b18ba04874655013a39390f4e941543e49b12264e1d09979cf0a1e535d6",
+                      "bytes":  8174,
+                      "sha256":  "d3dec2596339fd4a206735f48ad765a7b78cce38ed537df79edf596ac354ecc8",
                       "license_class":  "MIT"
                   },
                   {
