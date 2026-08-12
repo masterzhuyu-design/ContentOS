@@ -16,4 +16,23 @@ jobs:
           fetch-depth: 0
       - name: Run ContentOS behavior and release checks
         shell: powershell
-        run: .\tests\run-all.ps1
+        run: |
+          $output = & .\tests\run-all.ps1 2>&1
+          $exitCode = $LASTEXITCODE
+          $output | ForEach-Object { Write-Output $_ }
+          if ($exitCode -ne 0) {
+            $failureLines = @(
+              $output | Where-Object {
+                [string]$_ -match '^(FAIL:|SUMMARY: .* failed)'
+              }
+            )
+            $annotation = if ($failureLines.Count -gt 0) {
+              ($failureLines | ForEach-Object { [string]$_ }) -join ' | '
+            }
+            else {
+              "Validation exited with code $exitCode without a failure summary"
+            }
+            $annotation = $annotation.Replace('%', '%25').Replace("`r", '%0D').Replace("`n", '%0A')
+            Write-Output "::error title=ContentOS validation failed::$annotation"
+          }
+          exit $exitCode

@@ -1,10 +1,10 @@
 {
     "schema":  "contentos-package-manifest-v1",
     "release_id":  "contentos-v0.2.0-rc.1",
-    "generated_at":  "2026-08-12T20:17:42.4789700+08:00",
+    "generated_at":  "2026-08-12T20:51:23.0564163+08:00",
     "manifest_self_excluded":  true,
     "file_count":  92,
-    "total_bytes":  221442,
+    "total_bytes":  222238,
     "files":  [
                   {
                       "path":  "templates/ontology-statement.json",
@@ -398,8 +398,8 @@
                   },
                   {
                       "path":  ".github/workflows/ci.yml",
-                      "bytes":  343,
-                      "sha256":  "cf7f2b35dacf8b5857004c4048b189b86bc48a0ece8e4ce94bd03afbba2e55e0",
+                      "bytes":  1139,
+                      "sha256":  "96efea1336463c2f61988853300607c0deda394195952af11cb326feb7ce2758",
                       "license_class":  "MIT"
                   },
                   {
