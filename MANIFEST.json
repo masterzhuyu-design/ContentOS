@@ -1,10 +1,10 @@
 {
     "schema":  "contentos-package-manifest-v1",
     "release_id":  "contentos-v0.2.0-rc.1",
-    "generated_at":  "2026-08-12T20:54:30.6705122+08:00",
+    "generated_at":  "2026-08-12T21:09:22.6071330+08:00",
     "manifest_self_excluded":  true,
     "file_count":  92,
-    "total_bytes":  222818,
+    "total_bytes":  222990,
     "files":  [
                   {
                       "path":  "templates/ontology-statement.json",
@@ -452,8 +452,8 @@
                   },
                   {
                       "path":  "docs/launch-post.md",
-                      "bytes":  12043,
-                      "sha256":  "05db4ac8cb95418671a014cac462182d21e78df71bf2e140748d2c4350a514f7",
+                      "bytes":  12215,
+                      "sha256":  "8a47f55ded8c028cb86dbe09f33410e31d61ce81eb8857326fb46f718d4d5ff0",
                       "license_class":  "CC-BY-SA-4.0"
                   },
                   {

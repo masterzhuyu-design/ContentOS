@@ -2,7 +2,7 @@
 
 这份长文是 ContentOS 的正式发布主稿。中文原稿由项目作者于 2026-08-12 重新找回并提供；发布版只做了轻微的可读性整理，以及一处事实精度修正：把“基本消除了这种下降”改为更贴近论文结论的“大幅缓解了这种下降”。英文版不是逐句直译，而是在不削弱主线、力度和作者声音的前提下，为英文读者自然重写。
 
-它适合发布为 X 长文、长线程、GitHub Discussion 或项目发布文章，不适合作为单条 280 字符帖子。仓库地址确定后，分别替换中英文正文里的项目链接占位符。
+它适合发布为 X 长文、长线程、GitHub Discussion 或项目发布文章，不适合作为单条 280 字符帖子。中英文正文中的项目链接均已指向公开仓库。
 
 ## 中文发布版
 
@@ -64,6 +64,8 @@ GPS 帮我们记住路线是进步。我们关心的是到达目的地，而不�
 
 我也希望它能成为孩子们真正有用的学习工具。
 
+当然，这并不意味着拒绝合理地使用工具。
+
 如果你也想用它来写作，这个系统是专门针对 AI 最常见的写作失败设计的。
 
 AI 往往不是缺乏材料，而是拒绝舍弃任何东西。
@@ -102,7 +104,7 @@ AI 往往不是缺乏材料，而是拒绝舍弃任何东西。
 
 如果失败了，就开一个 Issue，附上材料、你卡在哪里，以及发生了什么。
 
-项目：[GitHub 链接]
+项目：https://github.com/masterzhuyu-design/ContentOS
 
 我会研究反复出现的问题，把它们变成测试，修复它们，并持续更新这个项目。
 
@@ -182,6 +184,8 @@ Learning becomes a form of social currency.
 
 I also want this to become a genuinely useful learning tool for children.
 
+Of course, none of this means rejecting the sensible use of tools.
+
 And if you want to use it for writing, the system is designed around one of AI writing’s most common failures.
 
 AI often does not suffer from a lack of material. It suffers from an unwillingness to discard anything.
@@ -220,7 +224,7 @@ Can we apply it to a new problem?
 
 If it fails, open an Issue. Include the material, where you got stuck, and what happened.
 
-Project: [GitHub link]
+Project: https://github.com/masterzhuyu-design/ContentOS
 
 I’ll study the failures that repeat, turn them into tests, fix them, and keep improving the project.
 
