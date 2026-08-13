@@ -68,6 +68,8 @@ $input = @{
 
 只有 `status=ready` 且 `generation_allowed=true` 才继续执行。空白承重内容、错误 turn、额外字段、超大输入、摘要漂移、路径越界或 reparse 跳转都会明确阻断。适配器对象里的 `authorization` 只是调用方声明，不是宿主已经授权的证明，因此公共解析器不会据此开放执行。
 
+学习材料可使用任何 UTF-8 语言。`.contentos/config.json` 中的 `language` 是默认教学与输出语言；当前任务里的明确语言要求优先，关键术语和不能无损翻译的表达保留原文。英文、日文或混合语言材料不会另建一套学习状态。
+
 外部 AI 客户端使用 `.agents/skills/contentos-external-proposal/SKILL.md` 和 `scripts/invoke-contentos-external-client-boundary.ps1`。它们可以得到 proposal-only 结果，但不能借外部会话 ID 选择 checkpoint、写文件或声称采用。
 
 ## 功能和边界

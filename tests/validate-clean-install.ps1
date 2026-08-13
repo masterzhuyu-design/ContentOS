@@ -70,6 +70,54 @@ try {
         if ([string]$config.active_profile -ne $profile) {
             $failures.Add("installed_profile_mismatch:$profile")
         }
+        $configuredLanguage = if ($profile -eq 'full') { 'en-US' }
+            else { 'ja-JP' }
+        $config.language = $configuredLanguage
+        [IO.File]::WriteAllText(
+            (Join-Path $fixture '.contentos\config.json'),
+            (($config | ConvertTo-Json -Depth 10) + "`n"),
+            [Text.UTF8Encoding]::new($false)
+        )
+        $learningKind = 'fixed_learning_intake'
+        $learningStage = 'learning_intake'
+        $turn = "installed-language-$profile"
+        $japaneseTerm = -join @(
+            [char]0x6975, [char]0x7AEF, [char]0x4E8B, [char]0x8C61
+        )
+        $multilingualMaterial =
+            "Events at the tail can dominate the outcome. $japaneseTerm."
+        $learningInput = [ordered]@{
+            schema = 'contentos-task-execution-input-v1'
+            scope_id = "installed-language-$profile"
+            current_turn_id = $turn
+            task_kind = $learningKind
+            task_stage = $learningStage
+            bindings = @(
+                [ordered]@{
+                    role = 'current_material'
+                    adapter = 'current_turn_inline'
+                    source_pointer = "current_turn:${turn}:current_material"
+                    value = $multilingualMaterial
+                },
+                [ordered]@{
+                    role = 'learning_goal'
+                    adapter = 'current_turn_inline'
+                    source_pointer = "current_turn:${turn}:learning_goal"
+                    value = 'Preserve source terminology while teaching.'
+                }
+            )
+        } | ConvertTo-Json -Compress -Depth 10
+        $languageStartup = & (Join-Path $fixture `
+            'scripts\resolve-contentos-startup.ps1') -Root $fixture `
+            -TaskKind $learningKind -TaskExecutionInputJson $learningInput |
+            ConvertFrom-Json
+        if ([string]$languageStartup.status -ne 'ready' -or
+            [string]$languageStartup.generator_view.language_context.
+                default_output_language -ne $configuredLanguage -or
+            [string]$languageStartup.generator_view.inputs.current_material -cne
+                $multilingualMaterial) {
+            $failures.Add("installed_language_context_not_applied:$profile")
+        }
 
         foreach ($test in @(
             'tests\validate-powershell-syntax.ps1',

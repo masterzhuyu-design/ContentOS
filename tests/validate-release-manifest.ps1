@@ -40,8 +40,10 @@ if ($null -ne $manifest.PSObject.Properties['generated_at']) {
     $failures.Add('manifest_contains_nondeterministic_generated_at')
 }
 $manifestPaths = @($manifest.files | ForEach-Object { [string]$_.path })
+[string[]]$ordinalManifestPaths = @($manifestPaths)
+[Array]::Sort($ordinalManifestPaths, [StringComparer]::Ordinal)
 if (($manifestPaths -join "`n") -cne
-    (($manifestPaths | Sort-Object) -join "`n")) {
+    ($ordinalManifestPaths -join "`n")) {
     $failures.Add('manifest_paths_not_sorted')
 }
 

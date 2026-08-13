@@ -189,17 +189,29 @@ $manifest = Get-Content -LiteralPath $profilePath -Raw -Encoding UTF8 |
 $capabilityMap = Get-Content -LiteralPath $capabilityPath -Raw -Encoding UTF8 |
     ConvertFrom-Json
 
+$instanceConfig = Join-Path $rootFull '.contentos\config.json'
+$defaultConfig = Join-Path $rootFull 'config\contentos.example.json'
+$configPath = if (Test-Path -LiteralPath $instanceConfig -PathType Leaf) {
+    $instanceConfig
+}
+else { $defaultConfig }
+if (-not (Test-Path -LiteralPath $configPath -PathType Leaf)) {
+    throw "ContentOS config missing: $configPath"
+}
+$config = Get-Content -LiteralPath $configPath -Raw -Encoding UTF8 |
+    ConvertFrom-Json
+$defaultOutputLanguage = [string]$config.language
+if ([string]::IsNullOrWhiteSpace($defaultOutputLanguage)) {
+    throw "ContentOS default output language missing: $configPath"
+}
+$languageContext = [ordered]@{
+    default_output_language = $defaultOutputLanguage
+    source_text_encoding = 'utf-8'
+    source_text_handling = 'preserve_meaning_and_original_terms'
+    explicit_user_instruction = 'overrides_default_output_language'
+}
+
 if ([string]::IsNullOrWhiteSpace($Profile)) {
-    $instanceConfig = Join-Path $rootFull '.contentos\config.json'
-    $defaultConfig = Join-Path $rootFull 'config\contentos.example.json'
-    $configPath = if (Test-Path -LiteralPath $instanceConfig -PathType Leaf) {
-        $instanceConfig
-    }
-    else {
-        $defaultConfig
-    }
-    $config = Get-Content -LiteralPath $configPath -Raw -Encoding UTF8 |
-        ConvertFrom-Json
     $Profile = [string]$config.active_profile
 }
 
@@ -734,6 +746,7 @@ if ($status -in @('ready', 'ready_adapter_pending_host_authority')) {
             [string]$taskProfile.adapter_binding_input
         }
         else { $null }
+        language_context = $languageContext
         inputs = $inputValues
         authoritative_input_bindings = @($bindingRows)
         flexible_budget_state = $budgetState

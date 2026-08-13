@@ -14,7 +14,7 @@ $profiles = Get-Content -LiteralPath (
     Join-Path $rootFull 'core\profiles\task-profiles.json'
 ) -Raw -Encoding UTF8 | ConvertFrom-Json
 
-$rows = @(
+$unsortedRows = @(
     Get-ChildItem -LiteralPath $rootFull -Recurse -File -Force |
         Where-Object {
             $candidateRelative = $_.FullName.Substring($rootFull.Length).
@@ -50,9 +50,18 @@ $rows = @(
                 ).Hash.ToLowerInvariant()
                 license_class = $licenseClass
             }
-        } |
-        Sort-Object path
+        }
 )
+
+$rowsByPath = [Collections.Generic.Dictionary[string, object]]::new(
+    [StringComparer]::Ordinal
+)
+foreach ($row in $unsortedRows) {
+    $rowsByPath.Add([string]$row.path, $row)
+}
+[string[]]$orderedPaths = @($rowsByPath.Keys)
+[Array]::Sort($orderedPaths, [StringComparer]::Ordinal)
+$rows = @($orderedPaths | ForEach-Object { $rowsByPath[$_] })
 
 $manifest = [ordered]@{
     schema = 'contentos-package-manifest-v1'

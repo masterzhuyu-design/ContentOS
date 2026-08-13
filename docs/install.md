@@ -40,6 +40,8 @@ Set-Location .\ContentOS
 
 `lite` 只是同一套合同的常用任务预设，不是另一套产品。以后可在 `.contentos/config.json` 中把 `active_profile` 改为 `full`。
 
+同一配置文件中的 `language` 控制默认教学与输出语言，例如 `zh-CN`、`en-US` 或 `ja-JP`。它不限制材料语言；当前任务明确指定输出语言时，任务指令优先，原文关键术语仍会保留。
+
 发行源和实例必须是两个目录。初始化只创建新实例；检测到已有 `.contentos/config.json` 时会返回 `existing_instance_unchanged`，不会把初始化器伪装成更新器。它不联网、不安装模型、不登录账号、不创建任务，也不发布任何内容。
 
 新实例的 `.gitignore` 默认忽略整个 `vault/` 和本地 `.contentos/config.json`，避免私人笔记或本机配置被误提交。若目标目录已自带 `.gitignore` 却没有这两条保护，初始化会在写入前停止并要求先补齐，而不是静默继续。

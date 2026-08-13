@@ -13,6 +13,15 @@ $profiles = Get-Content -LiteralPath (
 $map = Get-Content -LiteralPath (
     Join-Path $Root 'core\capabilities\public-capability-map.json'
 ) -Raw -Encoding UTF8 | ConvertFrom-Json
+$instanceConfigPath = Join-Path $Root '.contentos\config.json'
+$configPath = if (Test-Path -LiteralPath $instanceConfigPath -PathType Leaf) {
+    $instanceConfigPath
+}
+else { Join-Path $Root 'config\contentos.example.json' }
+$expectedDefaultLanguage = [string](
+    Get-Content -LiteralPath $configPath -Raw -Encoding UTF8 |
+        ConvertFrom-Json
+).language
 $resolver = Join-Path $Root 'scripts\resolve-contentos-startup.ps1'
 $externalBoundary = Join-Path $Root `
     'scripts\invoke-contentos-external-client-boundary.ps1'
@@ -203,6 +212,40 @@ foreach ($profile in @($profiles.profiles)) {
     if ([string]$lite.status -ne $expectedLiteStatus) {
         $failures.Add("lite_scope_mismatch:${kind}:$($lite.status)")
     }
+}
+
+$learningProfile = @(
+    $profiles.profiles | Where-Object task_kind -eq 'public_learning_intake'
+)[0]
+$multilingualInputObject = New-TaskExecutionInputJson -Profile $learningProfile |
+    ConvertFrom-Json
+$englishMaterial =
+    'Black swans expose forecasts that assume thin-tailed risks.'
+$japaneseTerm = -join @(
+    [char]0x6975, [char]0x7AEF, [char]0x4E8B, [char]0x8C61
+)
+$mixedLanguageGoal =
+    "Explain in Chinese and preserve Black Swan and $japaneseTerm."
+@($multilingualInputObject.bindings |
+    Where-Object role -eq 'learning_material')[0].value = $englishMaterial
+@($multilingualInputObject.bindings |
+    Where-Object role -eq 'learning_goal')[0].value = $mixedLanguageGoal
+$multilingual = & $resolver -Root $Root -Profile full `
+    -TaskKind public_learning_intake -TaskExecutionInputJson (
+        $multilingualInputObject | ConvertTo-Json -Compress -Depth 14
+    ) | ConvertFrom-Json
+if ([string]$multilingual.status -ne 'ready' -or
+    [string]$multilingual.generator_view.inputs.learning_material -cne
+        $englishMaterial -or
+    [string]$multilingual.generator_view.inputs.learning_goal -cne
+        $mixedLanguageGoal -or
+    [string]$multilingual.generator_view.language_context.
+        default_output_language -ne $expectedDefaultLanguage -or
+    [string]$multilingual.generator_view.language_context.
+        source_text_handling -ne 'preserve_meaning_and_original_terms' -or
+    [string]$multilingual.generator_view.language_context.
+        explicit_user_instruction -ne 'overrides_default_output_language') {
+    $failures.Add('multilingual_learning_context_not_preserved')
 }
 
 $recoveryProfile = @(
