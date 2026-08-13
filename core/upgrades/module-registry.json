@@ -1,6 +1,6 @@
 {
   "schema": "contentos-module-registry-v1",
-  "release_id": "contentos-v0.2.0-rc.1",
+  "release_id": "contentos-v0.2.0-rc.2",
   "authority": "public_module_lifecycle_registry",
   "profiles": ["full", "lite"],
   "modules": [

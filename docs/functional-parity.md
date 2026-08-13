@@ -1,23 +1,27 @@
-# 功能同等性与测试口径
+# 合同覆盖与测试口径
 
-“功能相同”不是文件名、规则数量或测试数量相同，而是同一任务目的、准入条件、来源权限、状态转换和可观察停止结果能够在公开版本重现。
+这里的“覆盖”指任务目的、准入条件、来源权限和可观察停止结果在公开版本中有同一合同。它不表示仓库内置了模型推理、平台账号或真实领域执行器。
 
 ## 三种结论
 
-- **full**：公共核心直接提供任务合同和文件型实现边界；
-- **public_adapter**：公共核心提供完整合同，外部系统行为由可替换适配器实现；
+- **full**：公共核心可直接完成输入闭包、规则 hydration 和生成准入；
+- **public_adapter**：公共核心验证合同结构，但保持等待宿主权威，外部行为由可替换适配器实现；
 - **intentionally_private_instance_surface**：个人数据、账号、运行状态等不是产品能力，不进入公开仓库。
 
-当前能力地图有 28 个 canonical TaskKind：21 个 full，7 个 public_adapter。用户作答后的旧模型/案例查询由随包文件索引直接支持；KnowledgeOS 只是可选加速器。没有用“私人数据未开源”伪装成“功能缺失”，也没有把 vendor-specific 实现硬塞进核心。
+当前能力地图有 28 个 canonical TaskKind：21 个原生合同，7 个适配器合同。用户作答后的旧模型/案例查询由随包文件索引直接支持；KnowledgeOS 只是可选加速器。适配器自己提交的授权字符串不能证明宿主已经授权，因此不能让公共解析器假绿。
 
 ## 测试证明什么
 
 `validate-public-capability-coverage.ps1` 检查 28 个入口一一对应、分类闭合、adapter ID 和 full/lite profile 不漂移。
 
-`validate-functional-parity.ps1` 对每个入口运行匿名场景：缺必要输入必须阻断；完整输入时 full profile 必须 ready；lite 只允许明确子集；rule hydration、stage、track、implementation 和 parity 必须来自同一 canonical manifest；adapter-backed 任务不会在缺 adapter/authorization 时假装 ready。
+`validate-functional-parity.ps1` 保留旧文件名以兼容已有调用，但实际检查的是合同准入：缺必要输入必须阻断；空白数组、额外字段、超大载荷、错误 turn、摘要漂移和 reparse 路径必须 fail closed；lite 只允许明确子集；适配器即使结构完整也只能进入等待宿主权威状态。
 
-`validate-clean-install.ps1` 在全新临时目录分别安装 full 与 lite，复跑核心测试，并确认二次初始化不覆盖用户文件。
+它还专门复现过去会假绿的路径：旧 `InputsJson`、错误 current-turn pointer、漂移的文件摘要、不存在或不可恢复的 checkpoint、没有当前用户作答的首轮学习，以及外部客户端 host turn 与输入不一致。它们现在都必须 fail closed；有效外部调用也只能返回 proposal-only。
+
+`validate-clean-install.ps1` 在全新临时目录分别安装 full 与 lite，复跑核心测试，验证 Git 会忽略私人 vault，并确认二次初始化整实例不变。
 
 `validate-no-private-state.ps1` 检查私人路径、UUID、数据库、缓存和运行状态没有进入发行包；同时扫描当前工作树、Git 暂存索引与完整可达历史中的常见 API key、访问令牌、私钥、凭据 URL、敏感文件名和非占位凭据字段。扫描失败会阻止发布，报告只暴露规则名与路径，不回显疑似密钥正文。
 
-这些测试证明公开合同和确定性边界同等，不证明某个未安装平台适配器、模型质量或真实账号效果。后者必须由各自适配器和真实授权环境验证。
+质量脚本是对调用方提供的观察事实做确定性决策映射；它会拒绝缺字段和额外根字段，但不会把调用方自报事实升级成独立证据。真实语义质量仍由任务规则、实际产物和适当审阅承担。
+
+这些测试证明公开合同、输入闭包、恢复来源和确定性边界，不证明模型输出质量、真实账号效果、平台副作用或历史私人数据已经重现。那些结果必须在真实授权环境中另行验证。

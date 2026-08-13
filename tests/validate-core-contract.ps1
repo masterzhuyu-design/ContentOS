@@ -7,7 +7,7 @@ if ([string]::IsNullOrWhiteSpace($Root)) {
 }
 $Root = [IO.Path]::GetFullPath($Root)
 $failures = [Collections.Generic.List[string]]::new()
-$releaseId = 'contentos-v0.2.0-rc.1'
+$releaseId = 'contentos-v0.2.0-rc.2'
 
 function Require-File {
     param([string]$Relative)
@@ -34,12 +34,15 @@ foreach ($required in @(
     'core\capabilities\public-capability-map.json',
     'core\upgrades\module-registry.json',
     'core\schemas\adapter-binding.schema.json',
+    'core\schemas\task-execution-input.schema.json',
     'templates\adapter-binding.json',
     'scripts\resolve-contentos-startup.ps1',
+    'scripts\invoke-contentos-external-client-boundary.ps1',
     'scripts\init-contentos.ps1',
     'scripts\evaluate-contentos-quality-gate.ps1',
     'docs\对外聊天简要说明.md',
-    'docs\功能与操作流程.md'
+    'docs\功能与操作流程.md',
+    '.agents\skills\contentos-external-proposal\SKILL.md'
 )) {
     Require-File -Relative $required
 }
@@ -101,9 +104,21 @@ if (
     [string]$quality.input_schema -ne 'contentos-quality-observation-v1' -or
     [string]$quality.output_schema -ne 'contentos-quality-decision-v1' -or
     [string]$quality.side_effects -ne 'none' -or
+    [string]$quality.observation_authority -ne
+        'caller_supplied_not_independently_verified' -or
     [string]::IsNullOrWhiteSpace([string]$quality.semantic_gate_authority)
 ) {
     $failures.Add('quality_gate_interface_mismatch')
+}
+$inputContract = $profiles.input_contract
+if ([string]$inputContract.schema -ne 'contentos-input-contract-v1' -or
+    [int]$inputContract.max_binding_utf8_bytes -le 0 -or
+    [int]$inputContract.max_total_binding_utf8_bytes -lt
+        [int]$inputContract.max_binding_utf8_bytes -or
+    [int]$inputContract.max_task_execution_input_utf8_bytes -lt
+        [int]$inputContract.max_total_binding_utf8_bytes -or
+    [int]$inputContract.max_binding_count -lt 5) {
+    $failures.Add('input_contract_invalid')
 }
 $mechanicalGates = @($quality.mechanical_gates | ForEach-Object { [string]$_ })
 if ($mechanicalGates.Count -ne 13 -or @($mechanicalGates | Sort-Object -Unique).Count -ne 13) {
@@ -116,7 +131,7 @@ foreach ($gate in $mechanicalGates) {
         observation_id = "support-check-$gate"
         gate = $gate
         task_kind = 'content_review'
-        facts = [ordered]@{}
+        facts = [ordered]@{ contract_probe = $true }
     } | ConvertTo-Json -Compress -Depth 5
     try {
         $decision = & $qualityTool -Root $Root -ObservationJson $observation |
@@ -140,6 +155,14 @@ foreach ($profile in @($profiles.profiles)) {
     }
     if (@($profile.required_inputs).Count -eq 0) {
         $failures.Add("required_inputs_empty:$kind")
+    }
+    foreach ($workspaceRole in @(
+        $profile.workspace_required_inputs |
+            Where-Object { -not [string]::IsNullOrWhiteSpace([string]$_) }
+    )) {
+        if ([string]$workspaceRole -notin @($profile.required_inputs)) {
+            $failures.Add("workspace_input_not_required:${kind}:$workspaceRole")
+        }
     }
     if (@($profile.quality_gates).Count -eq 0) {
         $failures.Add("quality_gates_empty:$kind")

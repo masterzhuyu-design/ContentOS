@@ -20,6 +20,15 @@ $testBase = Join-Path ([IO.Path]::GetTempPath()) 'ContentOS-open-source-tests'
 $engine = (Get-Process -Id $PID).Path
 $failures = [Collections.Generic.List[string]]::new()
 $fixtures = [Collections.Generic.List[string]]::new()
+$readmeText = Get-Content -LiteralPath (Join-Path $Root 'README.md') -Raw `
+    -Encoding UTF8
+$installText = Get-Content -LiteralPath (Join-Path $Root 'docs\install.md') -Raw `
+    -Encoding UTF8
+if ($readmeText -match "-Destination '\\.\\my-contentos" -or
+    $installText -match "-Destination '\\.\\my-contentos" -or
+    $installText -notmatch 'github\.com/masterzhuyu-design/ContentOS\.git') {
+    $failures.Add('public_install_instructions_not_executable')
+}
 
 function Invoke-ChildValidation {
     param([string]$Fixture, [string]$RelativeTest)
@@ -48,6 +57,13 @@ try {
             $failures.Add("init_receipt_invalid:$profile")
             continue
         }
+        $instanceIgnore = Get-Content -LiteralPath (
+            Join-Path $fixture '.gitignore'
+        ) -Raw -Encoding UTF8
+        if ($instanceIgnore -notmatch '(?m)^/vault/$' -or
+            $instanceIgnore -notmatch '(?m)^/\.contentos/config\.json$') {
+            $failures.Add("instance_private_paths_not_ignored:$profile")
+        }
         $config = Get-Content -LiteralPath (
             Join-Path $fixture '.contentos\config.json'
         ) -Raw -Encoding UTF8 | ConvertFrom-Json
@@ -74,12 +90,43 @@ try {
             $marker + [Environment]::NewLine,
             [Text.UTF8Encoding]::new($false)
         )
+        $git = Get-Command git.exe -ErrorAction SilentlyContinue
+        if ($null -eq $git) {
+            $failures.Add('git_required_for_instance_privacy_check')
+        }
+        else {
+            & $git.Source -C $fixture init --quiet
+            & $git.Source -C $fixture check-ignore --quiet -- `
+                'vault/00_Inbox/user-owned-note.md'
+            if ($LASTEXITCODE -ne 0) {
+                $failures.Add("vault_not_git_ignored:$profile")
+            }
+            & $git.Source -C $fixture check-ignore --quiet -- `
+                '.contentos/config.json'
+            if ($LASTEXITCODE -ne 0) {
+                $failures.Add("instance_config_not_git_ignored:$profile")
+            }
+        }
         $second = & (Join-Path $Root 'scripts\init-contentos.ps1') `
             -SourceRoot $Root -Destination $fixture -Profile $profile |
             ConvertFrom-Json
         $readback = [IO.File]::ReadAllText($userFile, [Text.UTF8Encoding]::new($false)).Trim()
-        if ($readback -ne $marker -or $second.user_content_overwritten -ne $false) {
+        if ($readback -ne $marker -or
+            [string]$second.status -ne 'existing_instance_unchanged' -or
+            [int]$second.created_count -ne 0 -or
+            $second.user_content_overwritten -ne $false) {
             $failures.Add("repeat_init_overwrote_user_content:$profile")
+        }
+
+        if ($profile -eq 'full') {
+            $runAllOutput = & $engine -NoProfile -NonInteractive `
+                -ExecutionPolicy Bypass -File (Join-Path $fixture 'tests\run-all.ps1') `
+                -Root $fixture 2>&1
+            if ($LASTEXITCODE -ne 0 -or
+                ($runAllOutput -join "`n") -notmatch
+                    '8 passed, 2 skipped, 0 failed') {
+                $failures.Add('installed_run_all_skip_accounting_invalid')
+            }
         }
     }
 }

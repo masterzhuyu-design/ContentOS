@@ -14,7 +14,7 @@ $resolver = Join-Path $Root 'scripts\resolve-contentos-startup.ps1'
 
 foreach ($profile in @($manifest.profiles)) {
     $result = & $resolver -Root $Root -Profile full `
-        -TaskKind ([string]$profile.task_kind) -InputsJson '{}' |
+        -TaskKind ([string]$profile.task_kind) |
         ConvertFrom-Json
     $bytes = [int]$result.hydration.total_utf8_bytes
     $soft = [int]$profile.budget.soft_target_utf8_bytes

@@ -2,7 +2,8 @@
 param(
     [Parameter(Mandatory = $true)]
     [string]$TaskKind,
-    [string]$InputsJson = '{}',
+    [string]$TaskExecutionInputJson = '',
+    [string]$InputsJson = '',
     [string]$Root,
     [switch]$Pretty
 )
@@ -14,6 +15,7 @@ if ([string]::IsNullOrWhiteSpace($Root)) {
 
 $arguments = @{
     TaskKind = $TaskKind
+    TaskExecutionInputJson = $TaskExecutionInputJson
     InputsJson = $InputsJson
     Profile = 'lite'
     Root = $Root

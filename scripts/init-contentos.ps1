@@ -31,6 +31,50 @@ if (@($profiles.install_profiles | Where-Object profile_id -eq $Profile).Count -
     throw "Unknown ContentOS install profile: $Profile"
 }
 
+$existingConfigPath = Join-Path $destinationFull '.contentos\config.json'
+if (Test-Path -LiteralPath $existingConfigPath -PathType Leaf) {
+    $existingConfig = Get-Content -LiteralPath $existingConfigPath -Raw `
+        -Encoding UTF8 | ConvertFrom-Json
+    $receipt = [ordered]@{
+        schema = 'contentos-init-receipt-v1'
+        status = 'existing_instance_unchanged'
+        release_id = [string]$profiles.release_id
+        installed_release_id = [string]$existingConfig.release_id
+        update_required = (
+            [string]$existingConfig.release_id -ne [string]$profiles.release_id
+        )
+        profile_id = [string]$existingConfig.active_profile
+        requested_profile_id = $Profile
+        destination = $destinationFull
+        created_count = 0
+        skipped_count = 0
+        created = @()
+        skipped = @()
+        network_calls = 0
+        model_installs = 0
+        account_actions = 0
+        publish_actions = 0
+        user_content_overwritten = $false
+        note = 'init is create-only; use a reviewed update workflow for existing instances'
+    }
+    if ($Pretty) { $receipt | ConvertTo-Json -Depth 6 }
+    else { $receipt | ConvertTo-Json -Depth 6 -Compress }
+    return
+}
+
+$existingIgnorePath = Join-Path $destinationFull '.gitignore'
+if (Test-Path -LiteralPath $existingIgnorePath -PathType Leaf) {
+    $existingIgnore = Get-Content -LiteralPath $existingIgnorePath -Raw `
+        -Encoding UTF8
+    if ($existingIgnore -notmatch '(?m)^/vault/$' -or
+        $existingIgnore -notmatch '(?m)^/\.contentos/config\.json$') {
+        throw (
+            'Existing destination .gitignore must ignore /vault/ and ' +
+            '/.contentos/config.json before initialization'
+        )
+    }
+}
+
 $created = [Collections.Generic.List[string]]::new()
 $skipped = [Collections.Generic.List[string]]::new()
 
@@ -71,7 +115,7 @@ function Copy-NewTree {
 Ensure-Directory -Path $destinationFull
 
 foreach ($name in @(
-    'README.md', 'AGENTS.md', '.gitattributes', '.gitignore', 'LICENSE',
+    'README.md', 'AGENTS.md', '.gitattributes', 'LICENSE',
     'LICENSE-CODE', 'LICENSE-DOCS.md', 'THIRD-PARTY-NOTICES.md',
     'CONTRIBUTING.md', 'SECURITY.md', 'MANIFEST.json'
 )) {
@@ -81,7 +125,28 @@ foreach ($name in @(
     }
 }
 
-foreach ($directory in @('.github', 'core', 'templates', 'scripts', 'tests', 'docs', 'config')) {
+$instanceIgnorePath = Join-Path $destinationFull '.gitignore'
+if (Test-Path -LiteralPath $instanceIgnorePath -PathType Leaf) {
+    $skipped.Add('.gitignore')
+}
+else {
+    $sourceIgnore = [IO.File]::ReadAllText(
+        (Join-Path $sourceFull '.gitignore'),
+        [Text.UTF8Encoding]::new($false)
+    ).Replace("`r`n", "`n").Replace("`r", "`n").TrimEnd("`n")
+    $instanceIgnore = $sourceIgnore + "`n`n" +
+        '# Instance-private ContentOS state' + "`n" +
+        '/vault/' + "`n" +
+        '/.contentos/config.json' + "`n"
+    [IO.File]::WriteAllText(
+        $instanceIgnorePath,
+        $instanceIgnore,
+        [Text.UTF8Encoding]::new($false)
+    )
+    $created.Add('.gitignore')
+}
+
+foreach ($directory in @('.agents', '.github', 'core', 'templates', 'scripts', 'tests', 'docs', 'config')) {
     $sourceDirectory = Join-Path $sourceFull $directory
     if (Test-Path -LiteralPath $sourceDirectory -PathType Container) {
         Copy-NewTree -SourceDirectory $sourceDirectory -TargetDirectory (Join-Path $destinationFull $directory)
@@ -122,6 +187,8 @@ $receipt = [ordered]@{
     account_actions = 0
     publish_actions = 0
     user_content_overwritten = $false
+    privacy_defaults_applied = $true
+    update_performed = $false
 }
 
 if ($Pretty) {

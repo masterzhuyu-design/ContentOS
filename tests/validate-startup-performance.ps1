@@ -6,14 +6,34 @@ if ([string]::IsNullOrWhiteSpace($Root)) {
     $Root = Split-Path -Parent $PSScriptRoot
 }
 $resolver = Join-Path $Root 'scripts\resolve-contentos-startup.ps1'
-$inputs = @{ query = 'fixture'; source_scope = 'anonymous-fixture' } |
-    ConvertTo-Json -Compress
+$turn = 'startup-performance-fixture'
+$input = [ordered]@{
+    schema = 'contentos-task-execution-input-v1'
+    scope_id = 'startup-performance-fixture'
+    current_turn_id = $turn
+    task_kind = 'knowledge_query'
+    task_stage = 'retrieval'
+    bindings = @(
+        [ordered]@{
+            role = 'query'
+            adapter = 'current_turn_inline'
+            source_pointer = "current_turn:${turn}:query"
+            value = 'fixture'
+        },
+        [ordered]@{
+            role = 'source_scope'
+            adapter = 'current_turn_inline'
+            source_pointer = "current_turn:${turn}:source_scope"
+            value = 'anonymous-fixture'
+        }
+    )
+} | ConvertTo-Json -Compress -Depth 8
 $durations = [Collections.Generic.List[double]]::new()
 
 for ($index = 0; $index -lt 3; $index++) {
     $watch = [Diagnostics.Stopwatch]::StartNew()
     $result = & $resolver -Root $Root -Profile full -TaskKind knowledge_query `
-        -InputsJson $inputs | ConvertFrom-Json
+        -TaskExecutionInputJson $input | ConvertFrom-Json
     $watch.Stop()
     $durations.Add($watch.Elapsed.TotalMilliseconds)
     if ([string]$result.status -ne 'ready' -or

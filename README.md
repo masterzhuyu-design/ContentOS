@@ -2,7 +2,7 @@
 
 ContentOS 是一个文件优先、规则驱动的个人知识系统：它把学习、知识资产、证据研究、创作、审阅和恢复做成可检查的任务合同，同时让你的 Markdown/JSON 文件继续作为真相源。
 
-当前分支是 `v0.2.0-rc.1` 本地开源候选。公开核心从私人实例中抽离，不包含任何原作者的笔记、学习记录、Registry、checkpoint、账号数据、凭据、附件或运行数据库。
+当前分支是 `v0.2.0-rc.2` 公开候选版。公共核心从私人实例中抽离，不包含任何原作者的笔记、学习记录、Registry、checkpoint、账号数据、凭据、附件或运行数据库。
 
 **English summary:** ContentOS is a file-first, rule-driven personal knowledge system for learning, evidence research, reusable knowledge assets, creation, review, and recoverable agent workflows. The public repository contains one canonical 28-task contract with full and lite profiles while keeping private instance data outside the project.
 
@@ -17,57 +17,62 @@ ContentOS 是一个文件优先、规则驱动的个人知识系统：它把学�
 
 ## 一个公共核心，两个配置档
 
-- `full`：公开的 28 个 canonical TaskKind 全部可达。21 项由公共核心直接实现，7 项需要显式适配器和授权后才执行。
+- `full`：公开的 28 个 canonical TaskKind 全部可见。21 项可以在公共启动合同内直接准入；7 项属于适配器合同，公共解析器只验证结构，并保持 `ready_adapter_pending_host_authority`，直到真实宿主独立核验权限和副作用。
 - `lite`：同一合同的低上下文预设，默认开放 15 个常用任务。它不是第二套产品或真相源。
 
-平台、账号、实验 runner、视觉渲染、Registry 和 KnowledgeOS 可以作为实例适配器接入；适配器只负责外部系统细节，不能改写 canonical 任务语义。
+平台、账号、实验 runner、视觉渲染、Registry 和 KnowledgeOS 可以作为实例适配器接入；适配器只负责外部系统细节，不能改写 canonical 任务语义。仓库不捆绑模型推理引擎，也不把匿名合同测试冒充真实领域输出。
 
 ## 快速开始
 
 在发行目录中安装完整档：
 
 ```powershell
-.\scripts\init-contentos.ps1 -Destination '.\my-contentos' -Profile full
+.\scripts\init-contentos.ps1 -Destination '..\ContentOS-Workspace' -Profile full
 ```
 
 想先从小配置开始：
 
 ```powershell
-.\scripts\init-contentos.ps1 -Destination '.\my-contentos-small' -Profile lite
+.\scripts\init-contentos.ps1 -Destination '..\ContentOS-Workspace-Lite' -Profile lite
 ```
 
 进入新目录后运行：
 
 ```powershell
-.\tests\validate-core-contract.ps1
-.\tests\validate-public-capability-coverage.ps1
-.\tests\validate-functional-parity.ps1
-.\tests\validate-clean-install.ps1
-.\tests\validate-no-private-state.ps1
-.\tests\validate-release-manifest.ps1
+.\tests\run-all.ps1
 ```
 
-启动一个任务的例子：
+启动一个任务的例子。承重输入不是一组随意的字符串，而是绑定到真实当前 turn 的结构化对象：
 
 ```powershell
-$inputs = @{
-  topic = '为什么平均值会掩盖极端风险'
-  target_medium = 'article'
-  user_locks = @('保留鲜明判断', '不用企业公文腔')
-} | ConvertTo-Json -Compress
+$turn = 'your-host-current-turn-id'
+$input = @{
+  schema = 'contentos-task-execution-input-v1'
+  scope_id = 'extreme-risk-article'
+  current_turn_id = $turn
+  task_kind = 'direct_topic_creation'
+  task_stage = 'creation_planning'
+  bindings = @(
+    @{role='topic'; adapter='current_turn_inline'; source_pointer="current_turn:${turn}:topic"; value='为什么平均值会掩盖极端风险'},
+    @{role='target_medium'; adapter='current_turn_inline'; source_pointer="current_turn:${turn}:target_medium"; value='article'},
+    @{role='user_locks'; adapter='current_turn_inline'; source_pointer="current_turn:${turn}:user_locks"; value=@('保留鲜明判断','不用企业公文腔')}
+  )
+} | ConvertTo-Json -Compress -Depth 8
 
 .\scripts\resolve-contentos-startup.ps1 `
   -Profile full `
   -TaskKind direct_topic_creation `
-  -InputsJson $inputs `
+  -TaskExecutionInputJson $input `
   -Pretty
 ```
 
-只有 `status=ready` 且 `generation_allowed=true` 才继续执行。缺输入、profile 不含该任务、预算溢出或适配器/授权未提供时都会明确阻断。
+只有 `status=ready` 且 `generation_allowed=true` 才继续执行。空白承重内容、错误 turn、额外字段、超大输入、摘要漂移、路径越界或 reparse 跳转都会明确阻断。适配器对象里的 `authorization` 只是调用方声明，不是宿主已经授权的证明，因此公共解析器不会据此开放执行。
+
+外部 AI 客户端使用 `.agents/skills/contentos-external-proposal/SKILL.md` 和 `scripts/invoke-contentos-external-client-boundary.ps1`。它们可以得到 proposal-only 结果，但不能借外部会话 ID 选择 checkpoint、写文件或声称采用。
 
 ## 功能和边界
 
-公开能力清单在 [`core/capabilities/public-capability-map.json`](core/capabilities/public-capability-map.json)，详细同等性口径见 [`docs/functional-parity.md`](docs/functional-parity.md)。
+公开能力清单在 [`core/capabilities/public-capability-map.json`](core/capabilities/public-capability-map.json)，合同覆盖和测试能证明什么见 [`docs/functional-parity.md`](docs/functional-parity.md)。
 
 这套仓库提供任务合同、对象模型、状态边界、初始化脚本和确定性验证；实际推理可由 Codex 或其他能遵循 `AGENTS.md` 与 task envelope 的 agent 完成。它不会自动登录账号、发布内容、运行实验、恢复定时任务或覆盖你的已有知识库。
 
@@ -82,13 +87,12 @@ $inputs = @{
 - [口语化功能流程](docs/对外聊天简要说明.md)
 - [完整功能与操作流程](docs/功能与操作流程.md)
 - [公共核心与私人实例接口](docs/architecture-and-instance-seam.md)
-- [功能同等性与测试口径](docs/functional-parity.md)
+- [合同覆盖与测试口径](docs/functional-parity.md)
 - [安装说明](docs/install.md)
 - [更新与用户覆盖层](docs/update-and-user-overrides.md)
 - [可升级模块地图](docs/可升级模块地图.md)
 - [权利与分享](docs/rights-and-sharing.md)
 - [中英双语开源发布长文](docs/launch-post.md)
-- [开源发布路线](docs/open-source-roadmap.md)
 
 ## 许可证
 

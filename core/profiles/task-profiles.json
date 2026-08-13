@@ -1,12 +1,26 @@
 {
   "schema": "contentos-task-profiles-v1",
-  "release_id": "contentos-v0.2.0-rc.1",
+  "release_id": "contentos-v0.2.0-rc.2",
   "authority": "canonical_public_task_contract",
+  "input_contract": {
+    "schema": "contentos-input-contract-v1",
+    "max_task_execution_input_utf8_bytes": 1048576,
+    "max_binding_utf8_bytes": 262144,
+    "max_total_binding_utf8_bytes": 524288,
+    "max_binding_count": 16,
+    "role_contracts": {
+      "affected_rule_files": {"type": "nonblank_string_array", "min_items": 1},
+      "affected_tests": {"type": "nonblank_string_array", "min_items": 1},
+      "current_round_answers": {"type": "nonblank_string_array", "min_items": 1},
+      "user_locks": {"type": "nonblank_string_array", "min_items": 1}
+    }
+  },
   "quality_gate_interface": {
     "tool": "scripts/evaluate-contentos-quality-gate.ps1",
     "input_schema": "contentos-quality-observation-v1",
     "output_schema": "contentos-quality-decision-v1",
     "side_effects": "none",
+    "observation_authority": "caller_supplied_not_independently_verified",
     "mechanical_gates": [
       "teaching_before_test", "transfer_integrity", "asset_reuse", "share_completeness",
       "capacity_preservation", "creation_coherence", "revision_scope", "authorship_quality",
@@ -148,7 +162,8 @@
     {
       "task_kind": "fixed_learning_first_round", "task_stage": "learning_first_round", "track": "LearningTrack", "retrieval_depth": "K2",
       "objective": "Test rule-level understanding, freeze the unaided score, then use an old-knowledge check to improve the answer and repair the earliest misconception.",
-      "implementation": "native_contract", "required_inputs": ["teaching_digest", "source_pointer"],
+      "implementation": "native_contract", "required_inputs": ["current_learning_record", "current_round_answers", "source_scope"],
+      "workspace_required_inputs": ["current_learning_record"],
       "rule_files": ["core/rules/00-boundaries.md", "core/rules/03-learning-review-and-share.md", "core/rules/04-assets-ontology-and-reuse.md"],
       "quality_gates": ["unaided_score_frozen", "teaching_before_test", "answer_improvement_delta"],
       "budget": {"soft_target_utf8_bytes": 17000, "advisory_ceiling_utf8_bytes": 28000, "hard_safety_ceiling_utf8_bytes": 48000}
@@ -156,7 +171,8 @@
     {
       "task_kind": "fixed_learning_transfer_round", "task_stage": "learning_transfer", "track": "LearningTrack", "retrieval_depth": "K2",
       "objective": "Test transfer in a genuinely changed situation, freeze the unaided score, run an old-knowledge improvement check and gradually remove scaffolding.",
-      "implementation": "native_contract", "required_inputs": ["first_round_receipt", "transfer_target"],
+      "implementation": "native_contract", "required_inputs": ["current_learning_record", "current_round_answers", "transfer_context", "transfer_probe_history"],
+      "workspace_required_inputs": ["current_learning_record"],
       "rule_files": ["core/rules/00-boundaries.md", "core/rules/03-learning-review-and-share.md", "core/rules/04-assets-ontology-and-reuse.md"],
       "quality_gates": ["unaided_score_frozen", "transfer_integrity", "answer_improvement_delta"],
       "budget": {"soft_target_utf8_bytes": 17000, "advisory_ceiling_utf8_bytes": 28000, "hard_safety_ceiling_utf8_bytes": 48000}
@@ -261,6 +277,7 @@
       "task_kind": "thread_recovery", "task_stage": "recovery", "track": "MaintenanceTrack", "retrieval_depth": "K1",
       "objective": "Recover the minimum task state from the current checkpoint without replaying a complete conversation.",
       "implementation": "native_contract", "required_inputs": ["checkpoint_pointer"],
+      "workspace_required_inputs": ["checkpoint_pointer"],
       "rule_files": ["core/rules/00-boundaries.md", "core/rules/02-startup-recovery-and-write-gates.md"],
       "quality_gates": ["checkpoint_identity", "minimal_recovery"],
       "budget": {"soft_target_utf8_bytes": 9000, "advisory_ceiling_utf8_bytes": 15000, "hard_safety_ceiling_utf8_bytes": 26000}

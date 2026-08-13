@@ -15,7 +15,11 @@
     "task_kind": {"type": "string", "minLength": 1},
     "read_scope": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
     "write_scope": {"type": "array", "items": {"type": "string", "minLength": 1}},
-    "authorization": {"type": "string", "minLength": 1},
+    "authorization": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Caller-declared requested authority scope; not proof that a host granted it."
+    },
     "retry_semantics": {"enum": ["none", "idempotent", "explicit_only"]},
     "output_schema": {"type": "string", "minLength": 1},
     "readback": {"type": "string", "minLength": 1}

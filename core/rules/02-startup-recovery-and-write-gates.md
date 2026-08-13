@@ -4,10 +4,14 @@
 
 1. 取得 TaskKind。
 2. 读取当前 checkpoint 指针。
-3. 运行 `scripts/resolve-contentos-startup.ps1`，明确 TaskKind、profile 和任务输入。
+3. 运行 `scripts/resolve-contentos-startup.ps1`，提交 `contentos-task-execution-input-v1`：本轮身份、阶段和每项承重输入都必须有当前 turn 指针或已核验摘要的工作区文件指针。
 4. 只在 `status=ready` 和 `generation_allowed=true` 时执行。
 
-规则加载完成不等于输入闭合。缺材料、目标、既有工作处置、用户锁定项或证据时，必须返回缺口。
+规则加载完成不等于输入闭合。缺材料、目标、既有工作处置、用户锁定项或证据时，必须返回缺口。旧 `InputsJson` 只保留为迁移诊断入口，不再取得执行权限；任意字符串不能冒充 checkpoint、用户作答或工作区资产。
+
+`current_turn_inline` 的 source pointer 必须精确属于本轮；`workspace_artifact` 必须位于当前 ContentOS 根目录内、不能经过 symlink/junction 等 reparse 跳转，并在每次启动时复核文件摘要。输入值和总载荷受固定安全上限保护，超限应改用有摘要的工作区资产或拆分范围，不能把超大正文回显进启动 envelope。
+
+适配器绑定只证明结构和调用方声明。公共解析器没有宿主信任根，因此结构有效的适配器任务停在 `ready_adapter_pending_host_authority`；只有真实宿主独立核验权限与副作用后，才能在自己的执行面继续。
 
 ## 恢复
 

@@ -1,6 +1,9 @@
 /.contentos/local-overrides.json
 /.contentos/runtime/
-/.agents/
+/.agents/*
+!/.agents/skills/
+!/.agents/skills/contentos-external-proposal/
+!/.agents/skills/contentos-external-proposal/SKILL.md
 /.codex/
 /.codex-*/
 /.obsidian/workspace*

@@ -15,7 +15,8 @@
     "frozen_surfaces",
     "next_actions",
     "full_rewrite_allowed",
-    "side_effects"
+    "side_effects",
+    "observation_authority"
   ],
   "properties": {
     "schema": {
@@ -74,6 +75,9 @@
     },
     "side_effects": {
       "const": "none"
+    },
+    "observation_authority": {
+      "const": "caller_supplied_not_independently_verified"
     },
     "result": {
       "type": "object",

@@ -57,7 +57,9 @@ foreach ($case in $cases) {
     }
     if ([string]$decision.schema -ne 'contentos-quality-decision-v1' -or
         [string]$decision.decision -ne [string]$case.decision -or
-        [string]$decision.side_effects -ne 'none') {
+        [string]$decision.side_effects -ne 'none' -or
+        [string]$decision.observation_authority -ne
+            'caller_supplied_not_independently_verified') {
         $failures.Add("scenario_decision_mismatch:$($case.id):$($decision.decision)")
     }
     if ($null -ne $case.violation -and [string]$case.violation -notin @($decision.violations)) {
@@ -76,6 +78,22 @@ foreach ($case in $cases) {
         [bool]$decision.full_rewrite_allowed -ne [bool]$case.full_rewrite) {
         $failures.Add("scenario_rewrite_scope_mismatch:$($case.id)")
     }
+}
+
+$extraRootRejected = $false
+try {
+    $null = & $gateTool -Root $Root -ObservationJson (@{
+        schema = 'contentos-quality-observation-v1'
+        observation_id = 'unexpected-root-field'
+        gate = 'teaching_before_test'
+        task_kind = 'fixed_learning_first_round'
+        facts = @{ teaching_visible = $true; test_requested = $true }
+        claimed_verified = $true
+    } | ConvertTo-Json -Compress -Depth 5)
+}
+catch { $extraRootRejected = $true }
+if (-not $extraRootRejected) {
+    $failures.Add('quality_observation_additional_property_not_blocked')
 }
 
 if ($cases.Count -ne 28) {

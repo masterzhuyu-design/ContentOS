@@ -6,7 +6,9 @@ ContentOS 把公共程序和私人实例分开：
 2. `.contentos/config.json` 是当前实例的配置，至少决定使用 `full` 还是 `lite`；
 3. `vault/` 和 `.contentos/runtime/` 是用户内容与运行状态，不应被上游更新覆盖。
 
-`config/contentos.example.json` 中的 `user_overrides` 是保留给实例适配器的用户扩展位置。v0.2.0-rc.1 的 canonical startup 不会擅自解释任意 override 字段，避免一个未定义的本地文件静默改写任务合同。
+`config/contentos.example.json` 中的 `user_overrides` 是保留给实例适配器的用户扩展位置。v0.2.0-rc.2 的 canonical startup 不会擅自解释任意 override 字段，避免一个未定义的本地文件静默改写任务合同。
+
+`init-contentos.ps1` 只负责新建实例。对已有实例再次运行只会返回 `existing_instance_unchanged`；它不会半更新公共文件，也不会覆盖 vault。真正升级仍按下面的可回滚流程进行。
 
 ## 推荐更新流程
 

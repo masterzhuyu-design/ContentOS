@@ -10,6 +10,9 @@ if ([string]::IsNullOrWhiteSpace($Root)) {
 }
 $rootFull = [IO.Path]::GetFullPath($Root).TrimEnd('\', '/')
 $manifestPath = Join-Path $rootFull 'MANIFEST.json'
+$profiles = Get-Content -LiteralPath (
+    Join-Path $rootFull 'core\profiles\task-profiles.json'
+) -Raw -Encoding UTF8 | ConvertFrom-Json
 
 $rows = @(
     Get-ChildItem -LiteralPath $rootFull -Recurse -File -Force |
@@ -39,7 +42,7 @@ $rows = @(
             else {
                 'CC-BY-SA-4.0'
             }
-            [ordered]@{
+            [pscustomobject][ordered]@{
                 path = $relative
                 bytes = [int64]$_.Length
                 sha256 = (
@@ -53,13 +56,12 @@ $rows = @(
 
 $manifest = [ordered]@{
     schema = 'contentos-package-manifest-v1'
-    release_id = 'contentos-v0.2.0-rc.1'
-    generated_at = (Get-Date).ToString('o')
+    release_id = [string]$profiles.release_id
     manifest_self_excluded = $true
     file_count = $rows.Count
     total_bytes = [int64](
         $rows |
-            ForEach-Object { [int64]$_['bytes'] } |
+            ForEach-Object { [int64]$_.bytes } |
             Measure-Object -Sum
     ).Sum
     files = $rows

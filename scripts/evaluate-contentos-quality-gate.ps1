@@ -31,6 +31,18 @@ catch {
     throw "Invalid quality observation JSON: $($_.Exception.Message)"
 }
 
+$allowedRootFields = @('schema', 'observation_id', 'gate', 'task_kind', 'facts')
+foreach ($field in @($request.PSObject.Properties.Name)) {
+    if ([string]$field -notin $allowedRootFields) {
+        throw "Quality observation field is not allowed: $field"
+    }
+}
+foreach ($field in $allowedRootFields) {
+    if ($field -notin @($request.PSObject.Properties.Name)) {
+        throw "Quality observation field is required: $field"
+    }
+}
+
 if (
     [string]$request.schema -ne
         'contentos-quality-observation-v1'
@@ -42,7 +54,9 @@ foreach ($field in @('observation_id', 'gate', 'task_kind')) {
         throw "Quality observation field is required: $field"
     }
 }
-if ($null -eq $request.facts) {
+if ($null -eq $request.facts -or $request.facts -is [array] -or
+    $request.facts -is [string] -or
+    @($request.facts.PSObject.Properties).Count -eq 0) {
     throw 'Quality observation facts are required'
 }
 
@@ -59,6 +73,7 @@ $decision = [ordered]@{
     next_actions = @()
     full_rewrite_allowed = $false
     side_effects = 'none'
+    observation_authority = 'caller_supplied_not_independently_verified'
 }
 
 $requiredFactsByGate = @{

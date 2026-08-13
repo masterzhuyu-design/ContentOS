@@ -202,6 +202,9 @@ $denySegments = @(
     '.contentos/runtime/',
     '__pycache__/'
 )
+$allowedPublicAgentFiles = @(
+    '.agents/skills/contentos-external-proposal/skill.md'
+)
 $denyExtensions = @(
     '.db', '.sqlite', '.sqlite3', '.bin', '.gguf', '.safetensors',
     '.pyc', '.pyd', '.dll', '.exe'
@@ -216,6 +219,10 @@ foreach ($file in $files) {
     $lower = $relative.ToLowerInvariant()
     Test-PathForSecrets -RelativePath $relative -LocationPrefix ''
     foreach ($segment in $denySegments) {
+        if ($segment -eq '.agents/' -and
+            $lower -in $allowedPublicAgentFiles) {
+            continue
+        }
         if ($lower.StartsWith($segment) -or $lower.Contains('/' + $segment)) {
             Add-SanitizationFailure -Code 'forbidden_path' -Location $relative
             break
@@ -311,6 +318,9 @@ if ($IncludeGitHistory) {
                     }
                     $objectId = [string]$Matches[1]
                     $relative = [string]$Matches[2]
+                    Test-PathForSecrets -RelativePath (
+                        $relative.Replace('\', '/')
+                    ) -LocationPrefix 'git-index:'
                     if (-not $seenIndexBlobs.Add($objectId)) {
                         continue
                     }
@@ -319,6 +329,25 @@ if ($IncludeGitHistory) {
                         -Location 'git-index' -RelativePath $relative
                 }
                 $indexScanned = $true
+            }
+
+            $historyPathLines = @(
+                & $git -C $rootFull log --all --format= --name-only -- 2>$null
+            )
+            if ($LASTEXITCODE -ne 0) {
+                Add-SanitizationFailure -Code 'git_history_scan_failed' `
+                    -Location 'history_path_list'
+            }
+            else {
+                foreach ($relative in @(
+                    $historyPathLines |
+                        Where-Object { -not [string]::IsNullOrWhiteSpace([string]$_) } |
+                        Sort-Object -Unique
+                )) {
+                    Test-PathForSecrets -RelativePath (
+                        ([string]$relative).Replace('\', '/')
+                    ) -LocationPrefix 'git-history-path:'
+                }
             }
 
             $objectLines = @(& $git -C $rootFull rev-list --objects --all 2>$null)
@@ -346,7 +375,7 @@ if ($IncludeGitHistory) {
                     }
                     $historyBlobCount++
                     Test-GitBlobForSecrets -Git $git -ObjectId $objectId `
-                        -Location 'git-history' -RelativePath $relative
+                        -Location 'git-history' -RelativePath ''
                 }
             }
 

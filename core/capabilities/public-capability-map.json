@@ -1,8 +1,8 @@
 {
   "schema": "contentos-public-capability-map-v1",
-  "release_id": "contentos-v0.2.0-rc.1",
+  "release_id": "contentos-v0.2.0-rc.2",
   "authority": "derived_public_release_projection_from_task_profiles",
-  "parity_definition": "Same public task purpose, admission conditions, source-authority boundary and observable stop state; private instance data and vendor-specific side effects are replaced by explicit adapters.",
+  "parity_definition": "Contract-level parity: the public package preserves task purpose, admission conditions, source-authority boundary and observable stop state. It does not claim a bundled inference engine or verified vendor side effects; adapter-backed contracts remain pending until a host independently establishes authority.",
   "capabilities": [
     {"task_kind":"architecture_maintenance","parity":"full","adapter":null},
     {"task_kind":"learning_method_correction","parity":"full","adapter":null},

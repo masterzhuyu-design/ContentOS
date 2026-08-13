@@ -20,6 +20,8 @@ $tests = @(
     'tests\validate-clean-install.ps1'
 )
 $failures = [Collections.Generic.List[string]]::new()
+$passed = 0
+$skipped = 0
 
 foreach ($relative in $tests) {
     Write-Output "RUN: $relative"
@@ -31,6 +33,12 @@ foreach ($relative in $tests) {
     if ($exitCode -ne 0) {
         $failures.Add("$relative (exit $exitCode)")
     }
+    elseif (($output -join "`n") -match 'SUMMARY: .* not applicable') {
+        $skipped++
+    }
+    else {
+        $passed++
+    }
 }
 
 if ($failures.Count -gt 0) {
@@ -38,4 +46,4 @@ if ($failures.Count -gt 0) {
     "SUMMARY: ContentOS validation suite failed ($($failures.Count) tests)"
     exit 1
 }
-"SUMMARY: ContentOS validation suite passed ($($tests.Count) tests)"
+"SUMMARY: ContentOS validation suite passed ($passed passed, $skipped skipped, 0 failed)"

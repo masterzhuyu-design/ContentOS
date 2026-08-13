@@ -32,9 +32,17 @@ if (($manifestBytes -contains 13) -or
     $failures.Add('manifest_encoding_not_lf_utf8_no_bom')
 }
 if ([string]$manifest.schema -ne 'contentos-package-manifest-v1' -or
-    [string]$manifest.release_id -ne 'contentos-v0.2.0-rc.1' -or
+    [string]$manifest.release_id -ne 'contentos-v0.2.0-rc.2' -or
     $manifest.manifest_self_excluded -ne $true) {
     $failures.Add('manifest_identity_mismatch')
+}
+if ($null -ne $manifest.PSObject.Properties['generated_at']) {
+    $failures.Add('manifest_contains_nondeterministic_generated_at')
+}
+$manifestPaths = @($manifest.files | ForEach-Object { [string]$_.path })
+if (($manifestPaths -join "`n") -cne
+    (($manifestPaths | Sort-Object) -join "`n")) {
+    $failures.Add('manifest_paths_not_sorted')
 }
 
 $actualFiles = @(

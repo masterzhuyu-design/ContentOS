@@ -1,6 +1,6 @@
 {
   "schema": "contentos-config-v1",
-  "release_id": "contentos-v0.2.0-rc.1",
+  "release_id": "contentos-v0.2.0-rc.2",
   "active_profile": "full",
   "language": "zh-CN",
   "paths": {

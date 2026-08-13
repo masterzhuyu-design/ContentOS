@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contentos.dev/schema/task-execution-input-v1.json",
+  "title": "ContentOS Task Execution Input",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "scope_id", "current_turn_id", "task_kind", "task_stage", "bindings"],
+  "properties": {
+    "schema": {"const": "contentos-task-execution-input-v1"},
+    "scope_id": {"type": "string", "minLength": 1, "maxLength": 256},
+    "current_turn_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:@-]{0,255}$"
+    },
+    "task_kind": {"type": "string", "minLength": 1},
+    "task_stage": {"type": "string", "minLength": 1},
+    "bindings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["role", "adapter", "source_pointer"],
+        "properties": {
+          "role": {"type": "string", "minLength": 1},
+          "adapter": {"enum": ["current_turn_inline", "workspace_artifact"]},
+          "source_pointer": {"type": "string", "minLength": 1},
+          "value": {},
+          "expected_digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}
+        },
+        "allOf": [
+          {
+            "if": {"properties": {"adapter": {"const": "current_turn_inline"}}},
+            "then": {"required": ["value"]}
+          },
+          {
+            "if": {"properties": {"adapter": {"const": "workspace_artifact"}}},
+            "then": {"required": ["expected_digest"], "not": {"required": ["value"]}}
+          }
+        ]
+      }
+    }
+  }
+}
