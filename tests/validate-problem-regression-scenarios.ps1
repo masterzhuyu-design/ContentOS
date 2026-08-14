@@ -13,6 +13,10 @@ $cases = @(
     [ordered]@{id='teaching_present';gate='teaching_before_test';task='fixed_learning_first_round';facts=[ordered]@{teaching_visible=$true;test_requested=$true};decision='pass'},
     [ordered]@{id='transfer_inputs_missing';gate='transfer_integrity';task='fixed_learning_transfer_round';facts=[ordered]@{required_inputs_present=$false;answer_route_leaked=$false;mechanism_match=$true;boundary_differences_identified=$true};decision='return_upstream';violation='transfer_inputs_missing'},
     [ordered]@{id='transfer_answer_leak';gate='transfer_integrity';task='fixed_learning_transfer_round';facts=[ordered]@{required_inputs_present=$true;answer_route_leaked=$true;mechanism_match=$true;boundary_differences_identified=$true};decision='targeted_repair';violation='answer_route_leaked'},
+    [ordered]@{id='transfer_evidence_missing';gate='transfer_integrity';task='fixed_learning_transfer_round';facts=[ordered]@{required_inputs_present=$true;answer_route_leaked=$false;mechanism_match=$true;boundary_differences_identified=$true};decision='return_upstream';violation='transfer_evidence_missing'},
+    [ordered]@{id='transfer_same_route_no_gain';gate='transfer_integrity';task='fixed_learning_transfer_round';facts=[ordered]@{required_inputs_present=$true;answer_route_leaked=$false;mechanism_match=$true;boundary_differences_identified=$true;scaffold_profile=[ordered]@{practice_purpose='assessment';user_requested_practice=$false;remediation_target=$null};leakage_map=[ordered]@{current_answer_route_overlap='equivalent';new_load_bearing_inference_count=0;recent_error_evidence=$false}};decision='targeted_repair';violation='transfer_no_incremental_diagnostic_value'},
+    [ordered]@{id='transfer_distinct_route';gate='transfer_integrity';task='fixed_learning_transfer_round';facts=[ordered]@{required_inputs_present=$true;answer_route_leaked=$false;mechanism_match=$true;boundary_differences_identified=$true;scaffold_profile=[ordered]@{practice_purpose='assessment';user_requested_practice=$false;remediation_target=$null};leakage_map=[ordered]@{current_answer_route_overlap='partial';new_load_bearing_inference_count=1;recent_error_evidence=$false}};decision='pass';transfer_evidence='fresh_transfer'},
+    [ordered]@{id='transfer_real_remediation';gate='transfer_integrity';task='fixed_learning_transfer_round';facts=[ordered]@{required_inputs_present=$true;answer_route_leaked=$false;mechanism_match=$true;boundary_differences_identified=$true;scaffold_profile=[ordered]@{practice_purpose='remediation';user_requested_practice=$false;remediation_target='confused mechanism boundary in latest answer'};leakage_map=[ordered]@{current_answer_route_overlap='equivalent';new_load_bearing_inference_count=0;recent_error_evidence=$true}};decision='pass';transfer_evidence='remediation_practice_only'},
     [ordered]@{id='asset_no_match';gate='asset_reuse';task='fixed_learning_old_knowledge_query';facts=[ordered]@{mechanism_match=$false;net_gain=$true;conflict_detected=$false;body_required_for_decision=$false};decision='pass';reuse='no_use'},
     [ordered]@{id='asset_conflict';gate='asset_reuse';task='fixed_learning_old_knowledge_query';facts=[ordered]@{mechanism_match=$true;net_gain=$true;conflict_detected=$true;body_required_for_decision=$true};decision='pass';reuse='backstage'},
     [ordered]@{id='asset_use';gate='asset_reuse';task='fixed_learning_old_knowledge_query';facts=[ordered]@{mechanism_match=$true;net_gain=$true;conflict_detected=$false;body_required_for_decision=$true};decision='pass';reuse='use'},
@@ -74,6 +78,9 @@ foreach ($case in $cases) {
     if ($null -ne $case.action -and [string]$decision.result.recommended_action -ne [string]$case.action) {
         $failures.Add("scenario_action_mismatch:$($case.id)")
     }
+    if ($null -ne $case.transfer_evidence -and [string]$decision.result.transfer_evidence_class -ne [string]$case.transfer_evidence) {
+        $failures.Add("scenario_transfer_evidence_mismatch:$($case.id)")
+    }
     if ($null -ne $case.full_rewrite -and
         [bool]$decision.full_rewrite_allowed -ne [bool]$case.full_rewrite) {
         $failures.Add("scenario_rewrite_scope_mismatch:$($case.id)")
@@ -96,7 +103,7 @@ if (-not $extraRootRejected) {
     $failures.Add('quality_observation_additional_property_not_blocked')
 }
 
-if ($cases.Count -ne 28) {
+if ($cases.Count -ne 32) {
     $failures.Add("scenario_count_mismatch:$($cases.Count)")
 }
 if ($failures.Count -gt 0) {
@@ -104,4 +111,4 @@ if ($failures.Count -gt 0) {
     "SUMMARY: problem regression validation failed ($($failures.Count))"
     exit 1
 }
-"SUMMARY: problem regression validation passed (28 behavior scenarios)"
+"SUMMARY: problem regression validation passed (32 behavior scenarios)"

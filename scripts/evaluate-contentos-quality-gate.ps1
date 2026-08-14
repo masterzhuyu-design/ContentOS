@@ -204,6 +204,149 @@ switch ([string]$request.gate) {
             $decision.violations = @('answer_route_leaked')
             $decision.next_actions = @('redesign_transfer_prompt')
         }
+        else {
+            $scaffoldProperty =
+                $request.facts.PSObject.Properties['scaffold_profile']
+            $leakageProperty =
+                $request.facts.PSObject.Properties['leakage_map']
+            $scaffold = if ($null -ne $scaffoldProperty) {
+                $scaffoldProperty.Value
+            }
+            else { $null }
+            $leakage = if ($null -ne $leakageProperty) {
+                $leakageProperty.Value
+            }
+            else { $null }
+            $scaffoldFields = @(
+                'practice_purpose'
+                'user_requested_practice'
+                'remediation_target'
+            )
+            $leakageFields = @(
+                'current_answer_route_overlap'
+                'new_load_bearing_inference_count'
+                'recent_error_evidence'
+            )
+            $scaffoldNames = if ($null -ne $scaffold) {
+                @($scaffold.PSObject.Properties.Name)
+            }
+            else { @() }
+            $leakageNames = if ($null -ne $leakage) {
+                @($leakage.PSObject.Properties.Name)
+            }
+            else { @() }
+            $missingTransferEvidence = @(
+                @($scaffoldFields | Where-Object {
+                    $_ -notin $scaffoldNames
+                }) | ForEach-Object { "scaffold_profile.$_" }
+                @($leakageFields | Where-Object {
+                    $_ -notin $leakageNames
+                }) | ForEach-Object { "leakage_map.$_" }
+            )
+            if (
+                $null -eq $scaffold -or
+                $scaffold -is [array] -or
+                $scaffold -is [string] -or
+                $null -eq $leakage -or
+                $leakage -is [array] -or
+                $leakage -is [string] -or
+                $missingTransferEvidence.Count -gt 0
+            ) {
+                $decision.decision = 'return_upstream'
+                $decision.earliest_failure_layer = 'transfer_evidence'
+                $decision.violations = @('transfer_evidence_missing')
+                $decision.next_actions = @(
+                    'bind_scaffold_profile_and_leakage_map'
+                )
+                $decision['result'] = [ordered]@{
+                    missing_fields = $missingTransferEvidence
+                }
+            }
+            else {
+                $practicePurpose =
+                    [string]$scaffold.practice_purpose
+                $routeOverlap =
+                    [string]$leakage.current_answer_route_overlap
+                $newInferenceCount = 0
+                $inferenceCountValid = [int]::TryParse(
+                    [string]$leakage.new_load_bearing_inference_count,
+                    [ref]$newInferenceCount
+                ) -and $newInferenceCount -ge 0
+                $evidenceValid = (
+                    $practicePurpose -in @(
+                        'assessment'
+                        'user_requested_practice'
+                        'remediation'
+                    ) -and
+                    $routeOverlap -in @(
+                        'none'
+                        'partial'
+                        'equivalent'
+                    ) -and
+                    $inferenceCountValid
+                )
+                if (-not $evidenceValid) {
+                    $decision.decision = 'return_upstream'
+                    $decision.earliest_failure_layer =
+                        'transfer_evidence'
+                    $decision.violations = @(
+                        'transfer_evidence_invalid'
+                    )
+                    $decision.next_actions = @(
+                        'repair_transfer_evidence'
+                    )
+                }
+                else {
+                    $explicitUserPractice = (
+                        $practicePurpose -eq
+                            'user_requested_practice' -and
+                        $scaffold.user_requested_practice -eq $true
+                    )
+                    $actualRemediation = (
+                        $practicePurpose -eq 'remediation' -and
+                        -not [string]::IsNullOrWhiteSpace(
+                            [string]$scaffold.remediation_target
+                        ) -and
+                        $leakage.recent_error_evidence -eq $true
+                    )
+                    $sameRouteWithoutGain = (
+                        $routeOverlap -eq 'equivalent' -and
+                        $newInferenceCount -eq 0
+                    )
+                    if (
+                        $sameRouteWithoutGain -and
+                        -not $explicitUserPractice -and
+                        -not $actualRemediation
+                    ) {
+                        $decision.decision = 'targeted_repair'
+                        $decision.earliest_failure_layer =
+                            'question_design'
+                        $decision.violations = @(
+                            'transfer_no_incremental_diagnostic_value'
+                        )
+                        $decision.next_actions = @(
+                            'redesign_transfer_prompt'
+                            'stop_if_no_diagnostic_gap'
+                        )
+                    }
+                    else {
+                        $decision['result'] = [ordered]@{
+                            transfer_evidence_class = if (
+                                $actualRemediation
+                            ) {
+                                'remediation_practice_only'
+                            }
+                            elseif ($explicitUserPractice) {
+                                'user_requested_practice_only'
+                            }
+                            else {
+                                'fresh_transfer'
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
     'asset_reuse' {
         if ($request.facts.mechanism_match -ne $true) {

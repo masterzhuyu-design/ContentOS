@@ -3,7 +3,7 @@
     "release_id":  "contentos-v0.2.0-rc.2",
     "manifest_self_excluded":  true,
     "file_count":  95,
-    "total_bytes":  286638,
+    "total_bytes":  296079,
     "files":  [
                   {
                       "path":  ".agents/skills/contentos-external-proposal/SKILL.md",
@@ -115,8 +115,8 @@
                   },
                   {
                       "path":  "core/rules/03-learning-review-and-share.md",
-                      "bytes":  4822,
-                      "sha256":  "312581df381321c8668040a099d9f676c8d3a4fd7fe23582536fc28390b478e2",
+                      "bytes":  5837,
+                      "sha256":  "dd4db9c036b8e2ca8d687ee94efb3dedfaee0db44b895ec99687bddbf0fbfdcc",
                       "license_class":  "CC-BY-SA-4.0"
                   },
                   {
@@ -271,8 +271,8 @@
                   },
                   {
                       "path":  "docs/功能与操作流程.md",
-                      "bytes":  8587,
-                      "sha256":  "71df8d9029390293bfd9e2357a40f66efee3c745909849db616b2b3ef936f147",
+                      "bytes":  8913,
+                      "sha256":  "b9fd29959e20a1075649a776815642d8b92318d2c3dab08f54bbf47de05d55ab",
                       "license_class":  "CC-BY-SA-4.0"
                   },
                   {
@@ -295,8 +295,8 @@
                   },
                   {
                       "path":  "scripts/evaluate-contentos-quality-gate.ps1",
-                      "bytes":  18747,
-                      "sha256":  "d06147907331a546c8f47207f1aee274ad977bf254f41d0b88fdfe7ead61c994",
+                      "bytes":  24618,
+                      "sha256":  "9ba4f49aee1bbe9ebb09cd5fa6a872daaa5c3f28161ad9bc511c764771112805",
                       "license_class":  "MIT"
                   },
                   {
@@ -463,8 +463,8 @@
                   },
                   {
                       "path":  "tests/validate-problem-regression-scenarios.ps1",
-                      "bytes":  11436,
-                      "sha256":  "da9e918e5b7f89fdc25754379e42cb574eceb1005ad2ff24cce02a52a93d607f",
+                      "bytes":  13665,
+                      "sha256":  "f7ad13b6ef80e93fb3a039cf9164ab677621e3bcdfa9d1d8e6d0cc3ce728669d",
                       "license_class":  "MIT"
                   },
                   {
