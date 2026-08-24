@@ -57,11 +57,69 @@ foreach ($marker in @(
     'preview.validates / preview.cannot_prove / expansion_authority',
     '可编辑交付指针',
     '来源、权利与生成过程的 provenance',
-    '不自动授权整片扩展、批量生成或发布'
+    '不自动授权整片扩展、批量生成或发布',
+    '## 共用阶段引导',
+    '零至三个会实质改变判断、路线、成本、权利、扩展范围或成品效果的选择',
+    '最多一个当前无法可靠代选的承重问题',
+    'auto_continue / wait_for_user / complete / paused',
+    '用户要求只给成品时把引导留在后台',
+    'StageGuide 不新增 TaskKind、状态 owner、回执、常驻阶段包或人工闸门'
 )) {
     if (-not $creationRule.Contains($marker)) {
         $failures.Add("creation_media_execution_contract_missing:$marker")
     }
+}
+
+function Resolve-PublicStageGuide {
+    param(
+        [string]$Stage,
+        [object[]]$Choices = @(),
+        [string]$Question = '',
+        [ValidateSet('auto_continue','wait_for_user','complete','paused')]
+        [string]$Advance,
+        [AllowNull()][string]$NextStage
+    )
+    $distinct = @(
+        $Choices |
+            Where-Object { -not [string]::IsNullOrWhiteSpace([string]$_.delta) } |
+            Group-Object family |
+            ForEach-Object { $_.Group[0] }
+    )
+    if ($distinct.Count -gt 3) { throw 'too_many_visible_choices' }
+    $hasQuestion = -not [string]::IsNullOrWhiteSpace($Question)
+    if ($Advance -eq 'auto_continue' -and ($hasQuestion -or $distinct.Count -ne 0)) {
+        throw 'auto_continue_must_not_wait'
+    }
+    if ($Advance -eq 'wait_for_user' -and -not $hasQuestion -and $distinct.Count -lt 2) {
+        throw 'waiting_without_real_decision'
+    }
+    if ($Advance -in @('complete','paused') -and -not [string]::IsNullOrWhiteSpace($NextStage)) {
+        throw 'terminal_stage_must_not_advance'
+    }
+    [pscustomobject]@{
+        stage = $Stage
+        choices = $distinct
+        question = if ($hasQuestion) { $Question } else { $null }
+        advance = $Advance
+        next_stage = if ([string]::IsNullOrWhiteSpace($NextStage)) { $null } else { $NextStage }
+    }
+}
+
+$autoGuide = Resolve-PublicStageGuide -Stage 'kernel' -Advance auto_continue -NextStage 'assembly'
+if ($autoGuide.advance -ne 'auto_continue' -or $autoGuide.question -ne $null -or $autoGuide.choices.Count -ne 0) {
+    $failures.Add('guided_stage_auto_continue_failed')
+}
+$choiceGuide = Resolve-PublicStageGuide -Stage 'media_route' -Choices @(
+    [pscustomobject]@{family='footage';delta='preserve_real_scene'},
+    [pscustomobject]@{family='motion';delta='replace_with_motion_explanation'},
+    [pscustomobject]@{family='footage';delta='wording_only_duplicate'}
+) -Question '保留真实现场，还是改成动态图解？' -Advance wait_for_user -NextStage 'preview'
+if ($choiceGuide.choices.Count -ne 2 -or $choiceGuide.question -eq $null) {
+    $failures.Add('guided_stage_distinct_choice_failed')
+}
+$pauseGuide = Resolve-PublicStageGuide -Stage 'draft' -Advance paused -NextStage $null
+if ($pauseGuide.advance -ne 'paused' -or $pauseGuide.next_stage -ne $null) {
+    $failures.Add('guided_stage_pause_failed')
 }
 
 $profiles = Get-Content -LiteralPath (
