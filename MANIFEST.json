@@ -3,7 +3,7 @@
     "release_id":  "contentos-v0.2.0-rc.2",
     "manifest_self_excluded":  true,
     "file_count":  95,
-    "total_bytes":  296079,
+    "total_bytes":  299426,
     "files":  [
                   {
                       "path":  ".agents/skills/contentos-external-proposal/SKILL.md",
@@ -61,8 +61,8 @@
                   },
                   {
                       "path":  "README.md",
-                      "bytes":  6426,
-                      "sha256":  "b623eaa6a6e9b82fa9072db8b1c3667ff379bc8cbac320850da5f0bc547763fe",
+                      "bytes":  6498,
+                      "sha256":  "a8fa737700d56afe00df017157a6adafcea0c90e28457d7e0dc40fc0de353240",
                       "license_class":  "CC-BY-SA-4.0"
                   },
                   {
@@ -133,8 +133,8 @@
                   },
                   {
                       "path":  "core/rules/06-content-creation.md",
-                      "bytes":  2655,
-                      "sha256":  "7c734cc6430010645371330d353bcd262036c4fafd78cce2a87689fcb6a3f07e",
+                      "bytes":  4402,
+                      "sha256":  "63d0cf64ceb59776cf3060b864a30da4d5f28a362a3376e92c58c34936a46949",
                       "license_class":  "CC-BY-SA-4.0"
                   },
                   {
@@ -271,14 +271,14 @@
                   },
                   {
                       "path":  "docs/功能与操作流程.md",
-                      "bytes":  8913,
-                      "sha256":  "b9fd29959e20a1075649a776815642d8b92318d2c3dab08f54bbf47de05d55ab",
+                      "bytes":  9660,
+                      "sha256":  "03579a19fbbc8f20603b485b3a7e74ce7cd0d1c86579b36da44c17b6fc1f32a3",
                       "license_class":  "CC-BY-SA-4.0"
                   },
                   {
                       "path":  "docs/可升级模块地图.md",
-                      "bytes":  3145,
-                      "sha256":  "845a0da7838d36a51fd8fa70eef53d68e28452a99e58d366ce14a645f5f6c232",
+                      "bytes":  3193,
+                      "sha256":  "fc8f7e932b3b8a6d4fbf9b28dc4b57ebd5ab3ea625154916b8c343d229b19c7f",
                       "license_class":  "CC-BY-SA-4.0"
                   },
                   {
@@ -439,8 +439,8 @@
                   },
                   {
                       "path":  "tests/validate-core-contract.ps1",
-                      "bytes":  9313,
-                      "sha256":  "0491d4bca5e0fd5e6e6863854c6ba5ce5103a5a0b331a7949c9f157f576a263a",
+                      "bytes":  10046,
+                      "sha256":  "ce41546b1b35aa310937d39274c0176327029b3a2889788604a1b43a6c3af160",
                       "license_class":  "MIT"
                   },
                   {

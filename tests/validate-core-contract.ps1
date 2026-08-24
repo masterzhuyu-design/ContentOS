@@ -47,6 +47,23 @@ foreach ($required in @(
     Require-File -Relative $required
 }
 
+$creationRule = Get-Content -LiteralPath (
+    Join-Path $Root 'core\rules\06-content-creation.md'
+) -Raw -Encoding UTF8
+foreach ($marker in @(
+    '纯文字任务不创建 `MediaExecutionPlan`',
+    'footage_edit / programmable_motion / longform_repurpose / generated_sequence / hybrid',
+    'styleframe / shot_recipe / motion_canary / timeline_segment / candidate_reel / full_short',
+    'preview.validates / preview.cannot_prove / expansion_authority',
+    '可编辑交付指针',
+    '来源、权利与生成过程的 provenance',
+    '不自动授权整片扩展、批量生成或发布'
+)) {
+    if (-not $creationRule.Contains($marker)) {
+        $failures.Add("creation_media_execution_contract_missing:$marker")
+    }
+}
+
 $profiles = Get-Content -LiteralPath (
     Join-Path $Root 'core\profiles\task-profiles.json'
 ) -Raw -Encoding UTF8 | ConvertFrom-Json

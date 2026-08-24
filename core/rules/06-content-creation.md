@@ -2,7 +2,7 @@
 
 ## Interface
 
-`ContentKernel + selected_evidence + target_medium + user_locks → DraftPackage`
+`ContentKernel + selected_evidence + target_medium + user_locks + optional MediaExecutionPlan → DraftPackage`
 
 DraftPackage 包含一份主成稿、所用证据/案例/模型指针、未解决风险和紧凑审阅回执。
 
@@ -22,6 +22,25 @@ DraftPackage 包含一份主成稿、所用证据/案例/模型指针、未解�
 - revision：已有稿件，冻结合格部分并修最早失败层。
 
 模式只在发现真实缺口后升级，不因后台规则多而默认走最长链。
+
+## 载体执行（可选）
+
+纯文字任务不创建 `MediaExecutionPlan`。只有交付需要镜头、时间线、动态画面或多段媒体时，才由既有 ContentCreation owner 编译这份可选计划，不另建第二套创作主线。
+
+`MediaExecutionPlan` 至少包含：
+
+- `mode`：`footage_edit / programmable_motion / longform_repurpose / generated_sequence / hybrid`；
+- 来源素材、场景或片段单元、连续性与用户锁定项；
+- 执行适配器与可编辑交付指针；
+- `preview.kind`：`styleframe / shot_recipe / motion_canary / timeline_segment / candidate_reel / full_short`；
+- `preview.validates / preview.cannot_prove / expansion_authority`；
+- 来源、权利与生成过程的 provenance。
+
+先根据素材、载体、可编辑交付和返工风险选表达路线，再选工具；不因安装了某个 skill 或供应商而反过来改写 ContentKernel。镜头目录、第三方 skill 和模型建议只是候选词汇，不能取得主线、采用或发布权。
+
+预演不是固定十秒。应选择成本最低、却最能推翻高代价错误假设的可观察产物：视觉身份可先看 styleframe，镜头因果看 shot recipe，动态节奏看 motion canary，剪辑连续性看 timeline segment，长素材取舍看带时间码 candidate reel；整条短内容本来就便宜可逆时，可以直接看 full short。预演通过只证明 `validates` 中列出的关系，不自动授权整片扩展、批量生成或发布。
+
+执行结果必须尽量保持可编辑，并能回溯来源、权利状态与采用决定。适配器可以完成局部实现选择，但不能改写主判断、用户锁定项或把“工具成功运行”冒充内容质量。
 
 ## 装配
 
