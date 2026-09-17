@@ -73,6 +73,15 @@ $input = @{
 
 外部 AI 客户端使用 `.agents/skills/contentos-external-proposal/SKILL.md` 和 `scripts/invoke-contentos-external-client-boundary.ps1`。它们可以得到 proposal-only 结果，但不能借外部会话 ID 选择 checkpoint、写文件或声称采用。
 
+## 只想先试一个功能？
+
+不必安装整个系统，可以先使用两个独立的轻量 skill：
+
+- [学习迁移教练](.agents/skills/learning-transfer-coach/SKILL.md)：解释、检查实际理解、修复卡点，再用不同问题检验迁移。
+- [成稿审阅与定向修复](.agents/skills/focused-draft-review/SKILL.md)：围绕读者和用途改真正的问题，保留声音与主线，不机械堆砌建议。
+
+见[安装、用法与行为验收场景 / Standalone skills](docs/standalone-skills.md)。两者无需私人知识库或指定模型；完整系统的状态管理与运行接口仍由 ContentOS 提供。
+
 ## 功能和边界
 
 公开能力清单在 [`core/capabilities/public-capability-map.json`](core/capabilities/public-capability-map.json)，合同覆盖和测试能证明什么见 [`docs/functional-parity.md`](docs/functional-parity.md)。

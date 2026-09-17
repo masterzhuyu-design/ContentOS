@@ -2,13 +2,25 @@
     "schema":  "contentos-package-manifest-v1",
     "release_id":  "contentos-v0.2.0-rc.2",
     "manifest_self_excluded":  true,
-    "file_count":  95,
-    "total_bytes":  304276,
+    "file_count":  98,
+    "total_bytes":  316093,
     "files":  [
                   {
                       "path":  ".agents/skills/contentos-external-proposal/SKILL.md",
                       "bytes":  2169,
                       "sha256":  "04dc6e3be083c294e2ccd56721ff609d22335a5381d80968c94132112df580e0",
+                      "license_class":  "CC-BY-SA-4.0"
+                  },
+                  {
+                      "path":  ".agents/skills/focused-draft-review/SKILL.md",
+                      "bytes":  3598,
+                      "sha256":  "e3a8f81b2f2bdc6d95070fe1437b9e169326cdeca4480c900d5186d6dea166a7",
+                      "license_class":  "CC-BY-SA-4.0"
+                  },
+                  {
+                      "path":  ".agents/skills/learning-transfer-coach/SKILL.md",
+                      "bytes":  3802,
+                      "sha256":  "9616e288ea3ecd2f5e5e92507d6a02fd01b4c69fc8648c5c3d735983db39585a",
                       "license_class":  "CC-BY-SA-4.0"
                   },
                   {
@@ -61,8 +73,8 @@
                   },
                   {
                       "path":  "README.md",
-                      "bytes":  6690,
-                      "sha256":  "14acbeee93cbc63aa627a3bddc140ccf33bd5a642dcd6a12f728e36a18e372d1",
+                      "bytes":  7327,
+                      "sha256":  "8b6c2c3714727f41923338cc169e4f8d333ab7b86544a4e659e16afa5b5f0cb9",
                       "license_class":  "CC-BY-SA-4.0"
                   },
                   {
@@ -264,6 +276,12 @@
                       "license_class":  "CC-BY-SA-4.0"
                   },
                   {
+                      "path":  "docs/standalone-skills.md",
+                      "bytes":  3673,
+                      "sha256":  "9a221e249a0e8508f58e1ffa0692694bbf1f4e685914ff475df265e4f3d5ba4b",
+                      "license_class":  "CC-BY-SA-4.0"
+                  },
+                  {
                       "path":  "docs/update-and-user-overrides.md",
                       "bytes":  1759,
                       "sha256":  "156f05a6d25c8cab7671311294a00c03334548494e2a3fdb4503dd8e8dbc45e4",
@@ -337,8 +355,8 @@
                   },
                   {
                       "path":  "scripts/validate-package-sanitization.ps1",
-                      "bytes":  15292,
-                      "sha256":  "483249f349a615b43aed8ea9ebb764b5d9bbb5e4bb8d3bc785580b09d03f5077",
+                      "bytes":  15399,
+                      "sha256":  "374d9e6f9ee6bfa5f071ad97580192fe2182345cabcb0b23434c44ef38f51156",
                       "license_class":  "MIT"
                   },
                   {

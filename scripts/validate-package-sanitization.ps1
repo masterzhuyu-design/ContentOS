@@ -203,7 +203,9 @@ $denySegments = @(
     '__pycache__/'
 )
 $allowedPublicAgentFiles = @(
-    '.agents/skills/contentos-external-proposal/skill.md'
+    '.agents/skills/contentos-external-proposal/skill.md',
+    '.agents/skills/learning-transfer-coach/skill.md',
+    '.agents/skills/focused-draft-review/skill.md'
 )
 $denyExtensions = @(
     '.db', '.sqlite', '.sqlite3', '.bin', '.gguf', '.safetensors',
